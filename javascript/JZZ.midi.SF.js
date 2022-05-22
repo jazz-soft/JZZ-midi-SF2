@@ -35,6 +35,9 @@
   function _num4le(n) {
     return String.fromCharCode(n & 0xff) + String.fromCharCode((n >> 8) & 0xff) + String.fromCharCode((n >> 16) & 0xff) + String.fromCharCode((n >> 24) & 0xff);
   }
+  function _s2n(s) {
+    return s.charCodeAt(0) + 0x100 * s.charCodeAt(1) + 0x10000 * s.charCodeAt(2) + 0x1000000 * s.charCodeAt(3);
+  }
 
   function SF() {
     var self = this;
@@ -83,9 +86,22 @@
   SF.prototype = [];
   SF.prototype.constructor = SF;
   SF.prototype.load = function(s) {
-    for (var i = 0; i < 32; i++) {
+    var len;
+    var type;
+    var p;
+    if (s.length < 8 || s.substr(0, 4) != 'RIFF') _error('Wrong file type');
+    len = _s2n(s.substr(4, 4));
+    if (len != s.length - 8) _error('Corrupted file');
+    for (var i = 8; i < 32; i++) {
       console.log(i, s[i], s.charCodeAt(i));
     }
+    p = 8;
+    type = s.substr(p, 8);
+    len = _s2n(s.substr(p + 8, 4));
+    console.log(type, len);
+    p += 12;
+    data = s.substr(p, len);
+    p += len;
   }
 
   JZZ.MIDI.SF = SF;
