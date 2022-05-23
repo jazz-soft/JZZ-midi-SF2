@@ -83,25 +83,53 @@
   }
   SF.version = function() { return _ver; };
 
+  function _expect(a, b) { if (a != b) _error('Unexpected chunk type: ' + a); }
+
   SF.prototype = [];
   SF.prototype.constructor = SF;
   SF.prototype.load = function(s) {
     var len;
-    var type;
     var p;
-    if (s.length < 8 || s.substr(0, 4) != 'RIFF') _error('Wrong file type');
+    if (s.length < 12 || s.substr(0, 4) != 'RIFF' || s.substr(8, 4) != 'sfbk') _error('Wrong file type');
     len = _s2n(s.substr(4, 4));
     if (len != s.length - 8) _error('Corrupted file');
-    for (var i = 8; i < 32; i++) {
-      console.log(i, s[i], s.charCodeAt(i));
-    }
-    p = 8;
-    type = s.substr(p, 8);
-    len = _s2n(s.substr(p + 8, 4));
-    console.log(type, len);
-    p += 12;
-    data = s.substr(p, len);
+    p = 12;
+
+    _expect(s.substr(p, 4), 'LIST');
+    _expect(s.substr(p + 8, 4), 'INFO');
+    len = _s2n(s.substr(p + 4, 4));
+    p += 8;
+    _readList(s.substr(p + 4, len - 4));
     p += len;
+
+    _expect(s.substr(p, 4), 'LIST');
+    _expect(s.substr(p + 8, 4), 'sdta');
+    len = _s2n(s.substr(p + 4, 4));
+    p += 8;
+    _readList(s.substr(p + 4, len - 4));
+    p += len;
+
+    _expect(s.substr(p, 4), 'LIST');
+    _expect(s.substr(p + 8, 4), 'pdta');
+    len = _s2n(s.substr(p + 4, 4));
+    p += 8;
+    _readList(s.substr(p + 4, len - 4));
+    p += len;
+
+  }
+
+  function _readList(s) {
+    var a = [];
+    p = 0;
+    while (p < s.length) {
+      type = s.substr(p, 4);
+      len = _s2n(s.substr(p + 4, 4));
+      p += 8;
+      data = s.substr(p + 4, len - 4);
+      p += len;
+    }
+    // assert(p == s.length);
+    return a;
   }
 
   JZZ.MIDI.SF = SF;
