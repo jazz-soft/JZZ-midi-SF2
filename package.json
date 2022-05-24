@@ -4,13 +4,19 @@
   "description": "coming soon...",
   "main": "javascript/JZZ.midi.SF2.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint javascript"
   },
   "author": "jazz-soft (https://jazz-soft.net/)",
   "dependencies": {
     "jzz": "^1.5.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "eslint": "^8.16.0",
+    "grunt": "^1.5.3",
+    "grunt-contrib-jshint": "^3.2.0",
+    "grunt-contrib-uglify": "^5.2.1"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jazz-soft/JZZ-midi-SF2.git"

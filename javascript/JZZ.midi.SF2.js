@@ -18,9 +18,6 @@
 
   function _error(s) { throw new Error(s); }
 
-  function _num4le(n) {
-    return String.fromCharCode(n & 0xff) + String.fromCharCode((n >> 8) & 0xff) + String.fromCharCode((n >> 16) & 0xff) + String.fromCharCode((n >> 24) & 0xff);
-  }
   function _s2n(s) {
     return s.charCodeAt(0) + 0x100 * s.charCodeAt(1) + 0x10000 * s.charCodeAt(2) + 0x1000000 * s.charCodeAt(3);
   }
@@ -28,11 +25,11 @@
   var _info = {
     ifil: 'File version', isng: 'Target Sound Engine', INAM: 'Bank Name', irom: 'ROM Name', iver: 'ROM Version',
     ICRD: 'Date', IENG: 'Sound Designers', IPRD: 'Product', ICOP: 'Copyright', ICMT: 'Comments', ISFT: 'Tool'
-  }
+  };
   var _pdta = {
     phdr: 'Preset Headers', pbag: 'Preset Index', pmod: 'Preset Modulators', pgen: 'Preset Generators',
     inst: 'Instrument Names', ibag: 'Instrument Index', imod: 'Instrument Modulators', igen: 'Instrument Generators', shdr: 'Sample Headers'
-  }
+  };
   function SF2() {
     var self = this;
     if (!(self instanceof SF2)) {
@@ -68,7 +65,6 @@
         self.load(arguments[0]);
         return self;
       }
-      type = parseInt(arguments[0]);
     }
   }
   SF2.version = function() { return _ver; };
@@ -103,7 +99,7 @@
     len = _s2n(s.substr(p + 4, 4));
     _loadPDTA(this.data, s.substr(p + 12, len - 4));
     p += len + 8;
-  }
+  };
 
   function _loadList(s) {
     var a = [];
@@ -138,17 +134,19 @@
 
   function _loadSDTA(d, s) {
     var a = _loadList(s);
+    var i, t, x;
     for (i = 0; i < a.length; i++) {
       t = a[i][0];
       x = a[i][1];
       if (d[t]) _error('Duplicate chunk: ' + t);
       if (t != 'smpl') _error('Unexpected chunk: ' + t);
+      d[t] = x;
     }
   }
 
   function _loadPDTA(d, s) {
     var a = _loadList(s);
-    var i, n, t, x;
+    var i, t, x;
     for (i = 0; i < a.length; i++) {
       t = a[i][0];
       x = a[i][1];
