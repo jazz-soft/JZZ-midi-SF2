@@ -1,2 +1,2 @@
-# JZZ-midi-SF
+# JZZ-midi-SF2
 coming soon...

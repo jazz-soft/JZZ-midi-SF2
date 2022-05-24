@@ -1,8 +1,8 @@
 {
-  "name": "jzz-midi-sf",
+  "name": "jzz-midi-sf2",
   "version": "0.0.0",
   "description": "coming soon...",
-  "main": "javascript/JZZ.midi.SF.js",
+  "main": "javascript/JZZ.midi.SF2.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,14 +10,12 @@
   "dependencies": {
     "jzz": "^1.5.1"
   },
-  "devDependencies": {
-  },
+  "devDependencies": {},
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jazz-soft/JZZ-midi-SF.git"
+    "url": "git+https://github.com/jazz-soft/JZZ-midi-SF2.git"
   },
-  "homepage": "https://github.com/jazz-soft/JZZ-midi-SF",
-  "bugs": "https://github.com/jazz-soft/JZZ-midi-SF/issues",
-  "license": "MIT",
-  "private": true
+  "homepage": "https://github.com/jazz-soft/JZZ-midi-SF2",
+  "bugs": "https://github.com/jazz-soft/JZZ-midi-SF2/issues",
+  "license": "MIT"
 }
