@@ -26,8 +26,8 @@
     ICRD: 'Date', IENG: 'Designers', IPRD: 'Product', ICOP: 'Copyright', ICMT: 'Comments', ISFT: 'Tool'
   };
   var _pdta = {
-    phdr: 'Preset Headers', pbag: 'Preset Index', pmod: 'Preset Modulators', pgen: 'Preset Generators',
-    inst: 'Instrument Names', ibag: 'Instrument Index', imod: 'Instrument Modulators', igen: 'Instrument Generators', shdr: 'Sample Headers'
+    phdr: 'Preset Headers', pbag: 'Preset Index', pmod: 'Preset Mod', pgen: 'Preset Gen',
+    inst: 'Instr Names', ibag: 'Instr Index', imod: 'Instr Mod', igen: 'Instr Gen', shdr: 'Sample Headers'
   };
   function SF2() {
     var self = this;
@@ -157,13 +157,13 @@
     this.name = a[0];
     this.preset = a[1];
     this.bank = a[2];
-    this.bag = a[3];
+    this.idx = a[3];
     this.library = a[4];
     this.genre = a[5];
     this.morph = a[6];
   }
   PHDR.prototype.toString = function() {
-    return this.name;
+    return [this.name, 'preset:', this.preset, 'bank:', this.bank, '#', this.idx].join(' ');
   };
   function _phdr(s) {
     var a = [];
@@ -208,17 +208,49 @@
     return a;
   }
 
-  function _pmod(s) {
+  function PMOD(a, b, c, d, e) {
+    this.src = a;
+    this.dest = b;
+    this.val = c;
+    this.mod = d;
+    this.oper = e;
   }
+  PMOD.prototype.toString = function() {
+    return ['src:', this.src, 'dest:', this.dest, 'val:', this.val, 'mod:', this.mod, 'oper:', this.oper].join(' ');
+  };
+  function _pmod(s) {
+    var a = [];
+    var p = 0;
+    while (p < s.length) {
+      a.push(new PMOD(_s22n(s.substr(p, 2)), _s22n(s.substr(p + 2, 2)), _s22n(s.substr(p + 4, 2)), _s22n(s.substr(p + 6, 2)), _s22n(s.substr(p + 8, 2))));
+      p += 10;
+    }
+    return a;
+  }
+
+  function PGEN(a, b) {
+    this.oper = a;
+    this.val = b;
+  }
+  PGEN.prototype.toString = function() {
+    return ['oper:', this.oper, 'val:', this.val].join(' ');
+  };
   function _pgen(s) {
+    var a = [];
+    var p = 0;
+    while (p < s.length) {
+      a.push(new PGEN(_s22n(s.substr(p, 2)), _s22n(s.substr(p + 2, 4))));
+      p += 4;
+    }
+    return a;
   }
 
   function INST(a, b) {
     this.name = a;
-    this.bag = b;
+    this.idx = b;
   }
   INST.prototype.toString = function() {
-    return this.name + ' ' + this.bag;
+    return [this.name, '#', this.idx].join(' ');
   };
   function _inst(s) {
     var a = [];
@@ -250,11 +282,42 @@
     return a;
   }
 
-  function _imod(s) {
+  function IMOD(a, b, c, d, e) {
+    this.src = a;
+    this.dest = b;
+    this.amt = c;
+    this.mod = d;
+    this.oper = e;
   }
-  function _igen(s) {
+  IMOD.prototype.toString = function() {
+    return ['src:', this.src, 'dest:', this.dest, 'amt:', this.amt, 'mod:', this.mod, 'oper:', this.oper].join(' ');
+  };
+  function _imod(s) {
+    var a = [];
+    var p = 0;
+    while (p < s.length) {
+      a.push(new IMOD(_s22n(s.substr(p, 2)), _s22n(s.substr(p + 2, 2)), _s22n(s.substr(p + 4, 2)), _s22n(s.substr(p + 6, 2)), _s22n(s.substr(p + 8, 2))));
+      p += 10;
+    }
+    return a;
   }
 
+  function IGEN(a, b) {
+    this.oper = a;
+    this.val = b;
+  }
+  IGEN.prototype.toString = function() {
+    return ['oper:', this.oper, 'val:', this.val].join(' ');
+  };
+  function _igen(s) {
+    var a = [];
+    var p = 0;
+    while (p < s.length) {
+      a.push(new IGEN(_s22n(s.substr(p, 2)), _s22n(s.substr(p + 2, 4))));
+      p += 4;
+    }
+    return a;
+  }
 
   function SHDR(a) {
     this.name = a[0];
@@ -269,7 +332,7 @@
     this.type = a[9];
   }
   SHDR.prototype.toString = function() {
-    return this.name;
+    return [this.name, this.start, '/', this.startlp, '/', this.endlp, '/', this.end, 'rate:', this.rate, 'key:', this.key, 'corr:', this.corr, 'link:', this.link, 'type:', this.type].join(' ');
   };
   function _shdr(s) {
     var a = [];
@@ -305,16 +368,16 @@
 
   function _n2v(a) { return a ? a[0] + ('.0' + a[1]).substr(0, 3) : ''; }
   var _info_tags = ['isng', 'INAM', 'irom', 'iver', 'ICRD', 'IENG', 'IPRD', 'ICOP', 'ICMT', 'ISFT'];
-  var _pdta_tags = ['phdr', 'pbag',   'inst', 'ibag', 'shdr'];
+  var _pdta_tags = ['phdr', 'pbag', 'pmod', 'pgen', 'inst', 'ibag', 'imod', 'igen', 'shdr'];
 
   SF2.prototype.toString = function() {
     var i, j, x;
     var a = ['SOUNDFONT ' + _n2v(this.data.ifil)];
-    for (i = 0; i < _info_tags.length; i++) if (this.data[_info_tags[i]]) a.push('  ' + (_info[_info_tags[i]] + ':        ').substr(0, 13) + this.data[_info_tags[i]]);
-    a.push('  Sample data: [ ' + this.data.smpl.length + ' ]');
+    for (i = 0; i < _info_tags.length; i++) if (this.data[_info_tags[i]]) a.push('  ' + (_info[_info_tags[i]] + ':           ').substr(0, 16) + this.data[_info_tags[i]]);
+    a.push('  Sample data:    [ ' + this.data.smpl.length + ' ]');
     for (i = 0; i < _pdta_tags.length; i++) {
       x = this.data[_pdta_tags[i]];
-      a.push('  ' + (_pdta[_pdta_tags[i]] + ':        ').substr(0, 15) + '[ ' + x.length + ' ]');
+      a.push('  ' + (_pdta[_pdta_tags[i]] + ':        ').substr(0, 16) + '[ ' + x.length + ' ]');
       for (j = 0; j < x.length; j++) a.push('    ' + x[j]);
     }
     return a.join('\n');
