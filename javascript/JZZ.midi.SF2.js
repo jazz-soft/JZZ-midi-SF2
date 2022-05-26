@@ -26,8 +26,8 @@
     ICRD: 'Date', IENG: 'Designers', IPRD: 'Product', ICOP: 'Copyright', ICMT: 'Comments', ISFT: 'Tool'
   };
   var _pdta = {
-    phdr: 'Preset Headers', pbag: 'Preset Index', pmod: 'Preset Mod', pgen: 'Preset Gen',
-    inst: 'Instr Names', ibag: 'Instr Index', imod: 'Instr Mod', igen: 'Instr Gen', shdr: 'Sample Headers'
+    phdr: 'Presets', pbag: 'Preset Index', pmod: 'Preset Mod', pgen: 'Preset Gen',
+    inst: 'Instruments', ibag: 'Instr Index', imod: 'Instr Mod', igen: 'Instr Gen', shdr: 'Samples'
   };
   function SF2() {
     var self = this;
@@ -373,12 +373,12 @@
   SF2.prototype.toString = function() {
     var i, j, x;
     var a = ['SOUNDFONT ' + _n2v(this.data.ifil)];
-    for (i = 0; i < _info_tags.length; i++) if (this.data[_info_tags[i]]) a.push('  ' + (_info[_info_tags[i]] + ':           ').substr(0, 16) + this.data[_info_tags[i]]);
-    a.push('  Sample data:    [ ' + this.data.smpl.length + ' ]');
+    for (i = 0; i < _info_tags.length; i++) if (this.data[_info_tags[i]]) a.push('  ' + (_info[_info_tags[i]] + ':         ').substr(0, 14) + this.data[_info_tags[i]]);
+    a.push('  Sample data:  [ ' + this.data.smpl.length + ' ]');
     for (i = 0; i < _pdta_tags.length; i++) {
       x = this.data[_pdta_tags[i]];
-      a.push('  ' + (_pdta[_pdta_tags[i]] + ':        ').substr(0, 16) + '[ ' + x.length + ' ]');
-      for (j = 0; j < x.length; j++) a.push('    ' + x[j]);
+      a.push('  ' + (_pdta[_pdta_tags[i]] + ':      ').substr(0, 14) + '[ ' + x.length + ' ]');
+      for (j = 0; j < x.length; j++) a.push('    (' + j + ') ' + x[j]);
     }
     return a.join('\n');
   };
