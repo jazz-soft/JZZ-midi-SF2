@@ -9,12 +9,32 @@
 <body>
 
 <h1>SF2 View</h1>
-<p id=player>Please enable JavaScript!</p>
+<p id=panel>Please enable JavaScript!</p>
 
 <script><!--
-document.getElementById('player').innerHTML = 'Please run <tt style="background-color:#bbf;"><b>npm install</b></tt> to enable this test.';
-sf = JZZ.MIDI.SF2;
-document.getElementById('player').innerHTML = '';
+var panel = document.getElementById('panel');
+panel.innerHTML = 'Please run <tt style="background-color:#bbf;"><b>npm install</b></tt> to enable this test.';
+var SF = JZZ.MIDI.SF2;
+panel.innerHTML = '';
+var input = document.createElement('input');
+input.type = 'file';
+input.accept = '.sf2,.sf3';
+input.addEventListener("change", load_file);
+panel.appendChild(input);
+
+function load_file() {
+  if (window.FileReader) {
+    var reader = new FileReader();
+    reader.onload = function(e) { load_sf(e.target.result); };
+    reader.readAsArrayBuffer(input.files[0]);
+  }
+  else alert('File API is not supported in this browser.');
+}
+
+function load_sf(data) {
+  var sf = new SF(data);
+  console.log(sf.toString());
+}
 --></script>
 
 </body>
