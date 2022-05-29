@@ -21,6 +21,8 @@ input.type = 'file';
 input.accept = '.sf2,.sf3';
 input.addEventListener("change", load_file);
 panel.appendChild(input);
+var display = document.createElement('div');
+panel.appendChild(display);
 
 function load_file() {
   if (window.FileReader) {
@@ -30,10 +32,19 @@ function load_file() {
   }
   else alert('File API is not supported in this browser.');
 }
-
 function load_sf(data) {
   var sf = new SF(data);
   console.log(sf.toString());
+  display_sf(sf);
+}
+function display_sf(sf) {
+  display.innerHTML = '';
+Cell(display, 'test');
+}
+
+function Cell(parent, text) {
+  var txt = document.createTextNode(text);
+  parent.appendChild(txt);
 }
 --></script>
 
