@@ -21,6 +21,7 @@ input.type = 'file';
 input.accept = '.sf2,.sf3';
 input.addEventListener("change", load_file);
 panel.appendChild(input);
+panel.appendChild(document.createElement('hr'));
 var display = document.createElement('div');
 panel.appendChild(display);
 
@@ -39,12 +40,19 @@ function load_sf(data) {
 }
 function display_sf(sf) {
   display.innerHTML = '';
-Cell(display, 'test');
+  Cell(display, 0, 'SOUNDFONT', sf.data.ifil, sf);
 }
 
-function Cell(parent, text) {
-  var txt = document.createTextNode(text);
-  parent.appendChild(txt);
+function Cell(parent, type, title, text, ref) {
+  var div = document.createElement('div');
+  var span = document.createElement('span');
+  span.innerHTML = title;
+  div.appendChild(span);
+  span = document.createElement('span');
+  span.innerHTML = text;
+  div.appendChild(span);
+  this.ref = ref;
+  parent.appendChild(div);
 }
 --></script>
 
