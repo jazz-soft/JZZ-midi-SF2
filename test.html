@@ -11,7 +11,7 @@
 <h1>SF2 View</h1>
 <p id=panel>Please enable JavaScript!</p>
 
-<script><!--
+<script>
 var panel = document.getElementById('panel');
 panel.innerHTML = 'Please run <tt style="background-color:#bbf;"><b>npm install</b></tt> to enable this test.';
 var SF = JZZ.MIDI.SF2;
@@ -34,9 +34,12 @@ function load_file() {
   else alert('File API is not supported in this browser.');
 }
 function load_sf(data) {
-  var sf = new SF(data);
-  console.log(sf.toString());
-  display_sf(sf);
+  try {
+    var sf = new SF(data);
+    console.log(sf.toString());
+    display_sf(sf);
+  }
+  catch (err) { alert(err.message); }
 }
 function display_sf(sf) {
   display.innerHTML = '';
@@ -54,7 +57,7 @@ function Cell(parent, type, title, text, ref) {
   this.ref = ref;
   parent.appendChild(div);
 }
---></script>
+</script>
 
 </body>
 </html>
