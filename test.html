@@ -4,6 +4,11 @@
 <title>SF2 View</title>
 <script src="node_modules/jzz/javascript/JZZ.js"></script>
 <script src="javascript/JZZ.midi.SF2.js"></script>
+<style>
+.title { width:8em; display:inline-block; font-weight:bold; }
+.drop { margin-left:2em; }
+.hide { visibility:hidden; }
+</style>
 </head>
 
 <body>
@@ -24,6 +29,7 @@ panel.appendChild(input);
 panel.appendChild(document.createElement('hr'));
 var display = document.createElement('div');
 panel.appendChild(display);
+var gui;
 
 function load_file() {
   if (window.FileReader) {
@@ -43,19 +49,46 @@ function load_sf(data) {
 }
 function display_sf(sf) {
   display.innerHTML = '';
-  Cell(display, 0, 'SOUNDFONT', sf.data.ifil, sf);
+  gui = new Cell(display, 0, 'SOUNDFONT', sf.data.ifil[0] + '.' + ('0' + sf.data.ifil[1]), sf);
+  gui.populate = populate;
+  gui.expand();
 }
 
 function Cell(parent, type, title, text, ref) {
-  var div = document.createElement('div');
+  this.div = document.createElement('div');
   var span = document.createElement('span');
+  span.className = 'title';
   span.innerHTML = title;
-  div.appendChild(span);
+  this.div.appendChild(span);
   span = document.createElement('span');
   span.innerHTML = text;
-  div.appendChild(span);
+  this.div.appendChild(span);
   this.ref = ref;
-  parent.appendChild(div);
+  parent.appendChild(this.div);
+}
+Cell.prototype.expand = function() {
+  if (!this.more) {
+    this.more = document.createElement('div');
+    this.more.className = 'drop';
+    if (this.populate) this.populate();
+    this.div.appendChild(this.more);
+  }
+}
+Cell.prototype.collapse = function() {
+}
+function populate() {
+  this.cells = [];
+  this.cells.push(new Cell(this.more, 0, 'Target', this.ref.data.isng));
+  this.cells.push(new Cell(this.more, 0, 'Bank Name', this.ref.data.INAM));
+  if (this.ref.data.irom) this.cells.push(new Cell(this.more, 0, 'ROM Name', this.ref.data.irom));
+  if (this.ref.data.iver) this.cells.push(new Cell(this.more, 0, 'ROM Version', this.ref.data.iver));
+  if (this.ref.data.ICRD) this.cells.push(new Cell(this.more, 0, 'Date', this.ref.data.ICRD));
+  if (this.ref.data.IENG) this.cells.push(new Cell(this.more, 0, 'Designers', this.ref.data.IENG));
+  if (this.ref.data.IPRD) this.cells.push(new Cell(this.more, 0, 'Product', this.ref.data.IPRD));
+  if (this.ref.data.ICOP) this.cells.push(new Cell(this.more, 0, 'Copyright', this.ref.data.ICOP));
+  if (this.ref.data.ICMT) this.cells.push(new Cell(this.more, 0, 'Comments', this.ref.data.ICMT));
+  if (this.ref.data.ISFT) this.cells.push(new Cell(this.more, 0, 'Software', this.ref.data.ISFT));
+  this.cells.push(new Cell(this.more, 2, 'Sample Data', '[ ' + this.ref.data.smpl.length + ' ]'));
 }
 </script>
 

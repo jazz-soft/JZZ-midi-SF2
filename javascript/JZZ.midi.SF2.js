@@ -23,12 +23,19 @@
 
   var _info = {
     ifil: 'File version', isng: 'Target', INAM: 'Bank Name', irom: 'ROM Name', iver: 'ROM Version',
-    ICRD: 'Date', IENG: 'Designers', IPRD: 'Product', ICOP: 'Copyright', ICMT: 'Comments', ISFT: 'Tool'
+    ICRD: 'Date', IENG: 'Designers', IPRD: 'Product', ICOP: 'Copyright', ICMT: 'Comments', ISFT: 'Software'
   };
   var _pdta = {
     phdr: 'Presets', pbag: 'Preset Index', pmod: 'Preset Mod', pgen: 'Preset Gen',
     inst: 'Instruments', ibag: 'Instr Index', imod: 'Instr Mod', igen: 'Instr Gen', shdr: 'Samples'
   };
+  function _u8a2s(u) {
+    var s = '';
+    var len = u.byteLength;
+    // String.fromCharCode.apply(null, u) throws "RangeError: Maximum call stack size exceeded" on large files
+    for (var i = 0; i < len; i++) s += String.fromCharCode(u[i]);
+    return s;
+  }
   function SF2() {
     var self = this;
     if (!(self instanceof SF2)) {
@@ -41,13 +48,13 @@
       var data;
       try {
         if (arguments[0] instanceof ArrayBuffer) {
-          data = String.fromCharCode.apply(null, new Uint8Array(arguments[0]));
+          data = _u8a2s(new Uint8Array(arguments[0]));
         }
       }
       catch (err) {/**/}
       try {
         if (arguments[0] instanceof Uint8Array || arguments[0] instanceof Int8Array) {
-          data = String.fromCharCode.apply(null, new Uint8Array(arguments[0]));
+          data = _u8a2s(new Uint8Array(arguments[0]));
         }
       }
       catch (err) {/**/}
