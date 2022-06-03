@@ -389,5 +389,79 @@
     return a.join('\n');
   };
 
+  function WAV() {
+    var self = this;
+    if (!(self instanceof WAV)) {
+      self = new WAV();
+    }
+    if (arguments.length == 1) {
+      if (arguments[0] instanceof WAV) {
+        return arguments[0].copy();
+      }
+      var data;
+      try {
+        if (arguments[0] instanceof ArrayBuffer) {
+          data = _u8a2s(new Uint8Array(arguments[0]));
+        }
+      }
+      catch (err) {/**/}
+      try {
+        if (arguments[0] instanceof Uint8Array || arguments[0] instanceof Int8Array) {
+          data = _u8a2s(new Uint8Array(arguments[0]));
+        }
+      }
+      catch (err) {/**/}
+      try {
+        /* istanbul ignore next */
+        if (arguments[0] instanceof Buffer) {
+          data = arguments[0].toString('binary');
+        }
+      }
+      catch (err) {/**/}
+      if (typeof arguments[0] == 'string') {
+        data = arguments[0];
+      }
+      self.load(data);
+      return self;
+    }
+  }
+  WAV.prototype = [];
+  WAV.prototype.constructor = WAV;
+  WAV.prototype.load = function(s) {
+    var len;
+    var p, c;
+    if (s.length < 12 || s.substr(0, 4) != 'RIFF' || s.substr(8, 4) != 'WAVE') _error('Not a WAV file');
+    len = _s42n(s.substr(4, 4));
+    if (len != s.length - 8) _error('Corrupted file');
+    p = 12;
+    while (p < s.length) {
+      c = s.substr(p, 4);
+      len = _s42n(s.substr(p + 4, 4));
+      if (c == 'fmt ') {
+        this._format = _s22n(s.substr(p + 8, 2));
+        this._nchan = _s22n(s.substr(p + 10, 2));
+        this._sps = _s42n(s.substr(p + 12, 4));
+        this._bps = _s42n(s.substr(p + 16, 4));
+        this._block = _s22n(s.substr(p + 20, 2));
+      }
+      if (c == 'data') {
+        this.push(s.substr(p + 8, len));
+      }
+      p += len + 8;
+    }
+  };
+  WAV.prototype.toString = function() {
+    var i, j, x;
+    var a = ['WAVE'];
+    a.push('  Format:            ' + this._format);
+    a.push('  Channels:          ' + this._format);
+    a.push('  Samples / second:  ' + this._sps);
+    a.push('  Bytes / second:    ' + this._bps);
+    a.push('  Block alignment:   ' + this._block);
+    for (i = 0; i < this.length; i++) a.push('data:  [ ' + this[i].length + ' ]');
+    return a.join('\n');
+  };
+
+  SF2.WAV = WAV;
   JZZ.MIDI.SF2 = SF2;
 });
