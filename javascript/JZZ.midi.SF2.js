@@ -17,9 +17,12 @@
   var _ver = '0.0.0';
 
   function _error(s) { throw new Error(s); }
-
   function _s22n(s) { return s.charCodeAt(0) + 0x100 * s.charCodeAt(1); }
   function _s42n(s) { return s.charCodeAt(0) + 0x100 * s.charCodeAt(1) + 0x10000 * s.charCodeAt(2) + 0x1000000 * s.charCodeAt(3); }
+  function _n2s2(n) { return String.fromCharCode(n & 0xff) + String.fromCharCode(n >> 8); }
+  function _n2s4(n) {
+    return String.fromCharCode(n & 0xff) + String.fromCharCode((n >> 8) & 0xff) + String.fromCharCode((n >> 16) & 0xff) + String.fromCharCode((n >> 24) & 0xff);
+  }
 
   var _info = {
     ifil: 'File version', isng: 'Target', INAM: 'Bank Name', irom: 'ROM Name', iver: 'ROM Version',
@@ -443,6 +446,7 @@
         this._sps = _s42n(s.substr(p + 12, 4));
         this._bps = _s42n(s.substr(p + 16, 4));
         this._block = _s22n(s.substr(p + 20, 2));
+        this._fspec = _s22n(s.substr(p + 22, 2));
       }
       if (c == 'data') {
         this.push(s.substr(p + 8, len));
@@ -451,17 +455,24 @@
     }
   };
   WAV.prototype.toString = function() {
-    var i, j, x;
+    var i;
     var a = ['WAVE'];
     a.push('  Format:            ' + this._format);
     a.push('  Channels:          ' + this._format);
     a.push('  Samples / second:  ' + this._sps);
     a.push('  Bytes / second:    ' + this._bps);
     a.push('  Block alignment:   ' + this._block);
+    a.push('  Format-specific:   ' + this._fspec);
     for (i = 0; i < this.length; i++) a.push('data:  [ ' + this[i].length + ' ]');
     return a.join('\n');
   };
-
+  WAV.prototype.dump = function() {
+    var s = 'fmt ' + _n2s4(16) + _n2s2(this._format) + _n2s2(this._nchan) + _n2s4(this._sps) + _n2s4(this._bps) + _n2s2(this._block) + _n2s2(this._fspec);
+    s += 'data' + _n2s4(this[0].length) + this[0];
+    s = 'RIFF' + _n2s4(s.length + 4) + 'WAVE' + s;
+    return s;
+  };
+  
   SF2.WAV = WAV;
   JZZ.MIDI.SF2 = SF2;
 });
