@@ -391,6 +391,25 @@
     }
     return a.join('\n');
   };
+  SF2.prototype.toWav = function() {
+    if (this.data.smpl.substr(0, 4) == 'OggS') return '';
+    var sps = 0;
+    for (var i = 0; i < this.data.shdr.length; i++) if (sps < this.data.shdr[i].rate) sps = this.data.shdr[i].rate;
+    if (!sps) sps = 48000;
+    var wav = new WAV();
+    wav[0] = this.data.smpl;
+    wav._format = 1;
+    wav._nchan = 1;
+    wav._sps = sps;
+    wav._bps = sps * 2;
+    wav._block = 2;
+    wav._fspec = 16;
+    return wav.dump();
+  };
+  SF2.prototype.toOgg = function() {
+    if (this.data.smpl.substr(0, 4) == 'OggS') return this.data.smpl;
+    return '';
+  };
 
   function WAV() {
     var self = this;
