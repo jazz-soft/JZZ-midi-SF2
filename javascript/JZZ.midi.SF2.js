@@ -83,7 +83,7 @@
   SF2.prototype.constructor = SF2;
   SF2.prototype.load = function(s) {
     var len;
-    var p;
+    var p, i;
     this.data = {};
     if (s.length < 12 || s.substr(0, 4) != 'RIFF' || s.substr(8, 4) != 'sfbk') _error('Not a SoundFont file');
     len = _s42n(s.substr(4, 4));
@@ -106,7 +106,19 @@
     _expect(s.substr(p + 8, 4), 'pdta');
     len = _s42n(s.substr(p + 4, 4));
     _loadPDTA(this.data, s.substr(p + 12, len - 4));
-    p += len + 8;
+    //p += len + 8;
+
+    this.Samples = [];
+    for (i = 0; i < this.data.shdr.length - 1; i++) this.Samples.push(new Sample(this.data.shdr[i]));
+    for (i = 0; i < this.Samples.length; i++) {
+      p = this.Samples[i];
+      if (typeof p.link != 'undefined') p.link = this.Samples[p.link];
+      p.sample = this.data.smpl.substring(p.start, p.end);
+      p.end -= p.start;
+      p.startlp -= p.start;
+      p.endlp -= p.start;
+      p.start = 0;
+    }
   };
 
   function _loadList(s) {
@@ -391,11 +403,14 @@
     }
     return a.join('\n');
   };
-  SF2.prototype.toWav = function() {
-    if (this.data.smpl.substr(0, 4) == 'OggS') return '';
+  SF2.prototype.freq = function() {
     var sps = 0;
     for (var i = 0; i < this.data.shdr.length; i++) if (sps < this.data.shdr[i].rate) sps = this.data.shdr[i].rate;
-    if (!sps) sps = 48000;
+    return sps || 48000;
+  };
+  SF2.prototype.toWav = function() {
+    if (this.data.smpl.substr(0, 4) == 'OggS') return '';
+    var sps = this.freq();
     var wav = new WAV();
     wav[0] = this.data.smpl;
     wav._format = 1;
@@ -410,6 +425,20 @@
     if (this.data.smpl.substr(0, 4) == 'OggS') return this.data.smpl;
     return '';
   };
+
+  function Sample(a) {
+    this.name = a.name;
+    this.start = a.start;
+    this.end = a.end;
+    this.startlp = a.startlp;
+    this.endlp = a.endlp;
+    this.rate = a.rate;
+    this.key = a.key;
+    this.corr = a.corr;
+    this.type = a.type;
+    if (this.type & 14) this.link = a.link;
+  }
+  SF2.Sample = Sample;
 
   function WAV() {
     var self = this;
