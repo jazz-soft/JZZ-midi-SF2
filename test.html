@@ -5,7 +5,9 @@
 <script src="node_modules/jzz/javascript/JZZ.js"></script>
 <script src="javascript/JZZ.midi.SF2.js"></script>
 <style>
-.title { width:8em; display:inline-block; font-weight:bold; }
+.knob { width:1em; height:1em; display:inline-block; margin-left:.2em; margin-right:.2em; }
+.knobb { width:1em; height:1em; display:inline-block; margin-left:.2em; margin-right:.2em; text-align:center; background-color:#ddd; line-height:1em; }
+.title { min-width:8em; display:inline-block; margin-right:.2em; font-weight:bold; }
 .drop { margin-left:2em; }
 .hide { visibility:hidden; }
 </style>
@@ -55,7 +57,25 @@ function display_sf(sf) {
 }
 
 function Cell(parent, type, title, text, ref) {
+  var self = this;
   this.div = document.createElement('div');
+  var knob = document.createElement('span');
+  knob.className = type == 1 ? 'knobb' : 'knob';
+  if (type == 1) {
+    knob.innerHTML = '+';
+    knob.addEventListener('click', function() {
+      if (self.exp) {
+        self.collapse();
+        knob.innerHTML = '+';
+      }
+      else {
+        self.expand();
+        knob.innerHTML = '-';
+      }
+      self.exp = !self.exp;
+    });
+  }
+  this.div.appendChild(knob);
   var span = document.createElement('span');
   span.className = 'title';
   span.innerHTML = title;
@@ -73,11 +93,14 @@ Cell.prototype.expand = function() {
     if (this.populate) this.populate();
     this.div.appendChild(this.more);
   }
+  this.more.classList.remove('hide');
 }
 Cell.prototype.collapse = function() {
+  this.more.classList.add('hide');
 }
 function populate() {
   this.cells = [];
+  var c;
   this.cells.push(new Cell(this.more, 0, 'Target', this.ref.data.isng));
   this.cells.push(new Cell(this.more, 0, 'Bank Name', this.ref.data.INAM));
   if (this.ref.data.irom) this.cells.push(new Cell(this.more, 0, 'ROM Name', this.ref.data.irom));
@@ -89,6 +112,17 @@ function populate() {
   if (this.ref.data.ICMT) this.cells.push(new Cell(this.more, 0, 'Comments', this.ref.data.ICMT));
   if (this.ref.data.ISFT) this.cells.push(new Cell(this.more, 0, 'Software', this.ref.data.ISFT));
   this.cells.push(new Cell(this.more, 2, 'Sample Data', '[ ' + this.ref.data.smpl.length + ' ]'));
+  c = new Cell(this.more, 1, 'Samples', '', this.ref.Samples);
+  c.populate = populate_samples;
+  this.cells.push(c);
+}
+function populate_samples() {
+  this.cells = [];
+  var i, c;
+  for (i = 0; i < this.ref.length; i++) {
+    c = new Cell(this.more, 0, this.ref[i].name, '[ ' + this.ref[i].sample.length + ' ]');
+    this.cells.push(c);
+  }
 }
 </script>
 

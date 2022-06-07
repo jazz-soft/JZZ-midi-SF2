@@ -113,7 +113,7 @@
     for (i = 0; i < this.Samples.length; i++) {
       p = this.Samples[i];
       if (typeof p.link != 'undefined') p.link = this.Samples[p.link];
-      p.sample = this.data.smpl.substring(p.start, p.end);
+      p.sample = this.data.smpl.substring(p.start * 2, p.end * 2); // 16-bit samples
       p.end -= p.start;
       p.startlp -= p.start;
       p.endlp -= p.start;
@@ -438,6 +438,18 @@
     this.type = a.type;
     if (this.type & 14) this.link = a.link;
   }
+  Sample.prototype.toWav = function() {
+    if (this.data.smpl.substr(0, 4) == 'OggS') return '';
+    var wav = new WAV();
+    wav[0] = this.sample;
+    wav._format = 1;
+    wav._nchan = 1;
+    wav._sps = this.rate;
+    wav._bps = this.rate * 2;
+    wav._block = 2;
+    wav._fspec = 16;
+    return wav.dump();
+  };
   SF2.Sample = Sample;
 
   function WAV() {
