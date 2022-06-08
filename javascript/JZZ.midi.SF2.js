@@ -439,7 +439,7 @@
     if (this.type & 14) this.link = a.link;
   }
   Sample.prototype.toWav = function() {
-    if (this.data.smpl.substr(0, 4) == 'OggS') return '';
+    if (this.sample.substr(0, 4) == 'OggS') return '';
     var wav = new WAV();
     wav[0] = this.sample;
     wav._format = 1;
