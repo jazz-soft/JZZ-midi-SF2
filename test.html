@@ -6,7 +6,7 @@
 <script src="javascript/JZZ.midi.SF2.js"></script>
 <style>
 .knob { width:1em; height:1em; display:inline-block; margin-left:.2em; margin-right:.2em; }
-.knobb { width:1em; height:1em; display:inline-block; margin-left:.2em; margin-right:.2em; text-align:center; background-color:#ddd; line-height:1em; vertical-align:middle; }
+.knobb { width:1em; height:1em; display:inline-block; margin-left:.2em; margin-right:.2em; text-align:center; background-color:#ddd; line-height:1em; vertical-align:middle; margin=0; }
 .title { min-width:8em; display:inline-block; margin-right:.2em; font-weight:bold; }
 .drop { margin-left:2em; }
 .hide { visibility:hidden; }
@@ -32,6 +32,7 @@ panel.appendChild(document.createElement('hr'));
 var display = document.createElement('div');
 panel.appendChild(display);
 var gui;
+var ac = new (window.AudioContext || window.webkitAudioContext)();
 
 function load_file() {
   if (window.FileReader) {
@@ -116,7 +117,7 @@ function populate() {
   if (this.ref.data.ICOP) this.cells.push(new Cell(this.more, 0, 'Copyright', this.ref.data.ICOP));
   if (this.ref.data.ICMT) this.cells.push(new Cell(this.more, 0, 'Comments', this.ref.data.ICMT));
   if (this.ref.data.ISFT) this.cells.push(new Cell(this.more, 0, 'Software', this.ref.data.ISFT));
-  this.cells.push(sampleCell(this.more, 'Sample Data', this.ref.data.smpl, this.ref.toWav()));
+  this.cells.push(sampleCell(this.more, 'Sample Data', this.ref.data.smpl, this.ref.toWav(), this.ref.freq()));
   c = new Cell(this.more, 1, 'Samples', '', this.ref.Samples);
   c.populate = populate_samples;
   this.cells.push(c);
@@ -125,12 +126,14 @@ function populate_samples() {
   this.cells = [];
   var i, c;
   for (i = 0; i < this.ref.length; i++) {
-    this.cells.push(sampleCell(this.more, this.ref[i].name, this.ref[i].sample, this.ref[i].toWav()));
+    this.cells.push(sampleCell(this.more, this.ref[i].name, this.ref[i].sample, this.ref[i].toWav(), this.ref[i].rate));
   }
 }
-function sampleCell(parent, title, data, wav) {
+var svg_play = '<svg fill="#555" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7z"/><path d="M0 0h24v24H0z" fill="none"/></svg>';
+var svg_stop = '<svg fill="#555" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M6 6h12v12H6z"/></svg>';
+function sampleCell(parent, title, data, wav, rate) {
   var cell = new Cell(parent, 0, title, '[ ' + data.length + ' ]');
-  var a, q;
+  var a, p, q;
   if (wav) {
     a = document.createElement('a');
     a.href = 'data:audio/wav;base64,' + JZZ.lib.toBase64(wav);
@@ -138,8 +141,48 @@ function sampleCell(parent, title, data, wav) {
     q = square(1);
     q.innerHTML = '<svg fill="#555" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 12v7H5v-7H3v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2zm-6 .67l2.59-2.58L17 11.5l-5 5-5-5 1.41-1.41L11 12.67V3h2z"/><path fill="none" d="M0 0h24v24H0z"/></svg>';
     a.appendChild(q);
+    a.title = 'export';
     cell.div.appendChild(a);
+    if (ac) {
+      p = square(1);
+      p.innerHTML = svg_play;
+      p.title = 'play';
+      cell.div.appendChild(p);
+      var ab, bs;
+      var playing = false;
+      p.addEventListener('click', function() {
+        if (playing) {
+          bs.stop();
+        }
+        else {
+          if (!ab) {
+            var len = data.length / 2;
+            ab = ac.createBuffer(1, len, rate);
+            var ch = ab.getChannelData(0);
+            for (var i = 0; i < len; i++) ch[i] = s2f(data.substr(i * 2, 2));
+          }
+          bs = ac.createBufferSource();
+          bs.buffer = ab;
+          bs.connect(ac.destination);
+          bs.addEventListener('ended', function() {
+            playing = false;
+            p.innerHTML = svg_play;
+            p.title = 'play';
+          });
+          bs.start();
+          playing = true;
+          p.innerHTML = svg_stop;
+          p.title = 'stop';
+        }
+      });
+    }
   }
+}
+function s2f(s) {
+  var f = s.charCodeAt(1);
+  if (f & 0x80) f -= 0x100;
+  f = f * 0x100 + s.charCodeAt(0);
+  return f / 0x10000;
 }
 </script>
 
