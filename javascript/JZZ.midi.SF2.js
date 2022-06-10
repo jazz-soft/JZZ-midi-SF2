@@ -119,6 +119,12 @@
       p.endlp -= p.start;
       p.start = 0;
     }
+    this.IGens = [];
+    for (i = 0; i < this.data.igen.length - 1; i++) {
+      p = new IGen(this.data.igen[i]);
+      if (p.oper == 53) p.sample = this.Samples[p.val];
+      this.IGens.push(p);
+    }
   };
 
   function _loadList(s) {
@@ -451,6 +457,39 @@
     return wav.dump();
   };
   SF2.Sample = Sample;
+
+  function initGen(g, a) {
+    g.oper = a.oper;
+    g.val = a.val;
+    g.name = {
+      16: 'Reverb Send',
+      17: 'Pan',
+      34: 'Attack (v)',
+      35: 'Hold (v)',
+      36: 'Decay (v)',
+      37: 'Sustain (v)',
+      38: 'Release (v)',
+      43: 'Key Range',
+      48: 'Attenuation',
+      53: 'Sample',
+      54: 'Sample Flags'
+    }[g.oper];
+    if (typeof g.name == 'undefined') g.name = g.oper;
+    g.read = readGen(g);
+  }
+  function readGen(g) {
+    switch (g.oper) {
+      case 17:
+        return ((g.val & 0x8000) ? g.val - 0x10000 : g.val) / 10 + '%'; 
+      case 43:
+        return (g.val & 0xff) + ' - ' + (g.val >> 8)
+    }
+    return g.val;
+  }
+  function IGen(a) {
+    initGen(this, a);
+  }
+  SF2.IGen = IGen;
 
   function WAV() {
     var self = this;

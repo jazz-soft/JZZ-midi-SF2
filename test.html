@@ -8,8 +8,8 @@
 .knob { width:1em; height:1em; display:inline-block; margin-left:.2em; margin-right:.2em; }
 .knobb { width:1em; height:1em; display:inline-block; margin-left:.2em; margin-right:.2em; text-align:center; background-color:#ddd; line-height:1em; vertical-align:middle; margin=0; }
 .title { min-width:8em; display:inline-block; margin-right:.2em; font-weight:bold; }
-.drop { margin-left:2em; }
-.hide { visibility:hidden; }
+.drop { margin-left:1.5em; }
+.hide { display:none; }
 </style>
 </head>
 
@@ -118,6 +118,9 @@ function populate() {
   if (this.ref.data.ICMT) this.cells.push(new Cell(this.more, 0, 'Comments', this.ref.data.ICMT));
   if (this.ref.data.ISFT) this.cells.push(new Cell(this.more, 0, 'Software', this.ref.data.ISFT));
   this.cells.push(sampleCell(this.more, 'Sample Data', this.ref.data.smpl, this.ref.toWav(), this.ref.freq()));
+  c = new Cell(this.more, 1, 'Instr Generators', '', this.ref.IGens);
+  c.populate = populate_igens;
+  this.cells.push(c);
   c = new Cell(this.more, 1, 'Samples', '', this.ref.Samples);
   c.populate = populate_samples;
   this.cells.push(c);
@@ -127,6 +130,13 @@ function populate_samples() {
   var i, c;
   for (i = 0; i < this.ref.length; i++) {
     this.cells.push(sampleCell(this.more, this.ref[i].name, this.ref[i].sample, this.ref[i].toWav(), this.ref[i].rate));
+  }
+}
+function populate_igens() {
+  this.cells = [];
+  var i, c;
+  for (i = 0; i < this.ref.length; i++) {
+    this.cells.push(igenCell(this.more, this.ref[i]));
   }
 }
 var svg_play = '<svg fill="#555" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7z"/><path d="M0 0h24v24H0z" fill="none"/></svg>';
@@ -183,6 +193,13 @@ function s2f(s) {
   if (f & 0x80) f -= 0x100;
   f = f * 0x100 + s.charCodeAt(0);
   return f / 0x10000;
+}
+function igenCell(parent, x) {
+  if (x.oper == 53) {
+    var cell = new Cell(parent, 1, x.name, x.read, [ x.sample ]);
+    cell.populate = populate_samples;
+  }
+  else new Cell(parent, 0, x.name, x.read);
 }
 </script>
 
