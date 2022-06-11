@@ -125,6 +125,12 @@
       if (p.oper == 53) p.sample = this.Samples[p.val];
       this.IGens.push(p);
     }
+    this.PGens = [];
+    for (i = 0; i < this.data.pgen.length - 1; i++) {
+      p = new PGen(this.data.pgen[i]);
+      if (p.oper == 53) p.sample = this.Samples[p.val];
+      this.PGens.push(p);
+    }
   };
 
   function _loadList(s) {
@@ -469,7 +475,11 @@
       36: 'Decay (v)',
       37: 'Sustain (v)',
       38: 'Release (v)',
+      41: 'Instrument',
       43: 'Key Range',
+      44: 'Velocity Range',
+      46: 'Key',
+      47: 'Velocity',
       48: 'Attenuation',
       53: 'Sample',
       54: 'Sample Flags'
@@ -490,6 +500,11 @@
     initGen(this, a);
   }
   SF2.IGen = IGen;
+
+  function PGen(a) {
+    initGen(this, a);
+  }
+  SF2.PGen = PGen;
 
   function WAV() {
     var self = this;
