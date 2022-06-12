@@ -83,7 +83,7 @@
   SF2.prototype.constructor = SF2;
   SF2.prototype.load = function(s) {
     var len;
-    var p, i;
+    var p, i, j;
     this.data = {};
     if (s.length < 12 || s.substr(0, 4) != 'RIFF' || s.substr(8, 4) != 'sfbk') _error('Not a SoundFont file');
     len = _s42n(s.substr(4, 4));
@@ -125,10 +125,23 @@
       if (p.oper == 53) p.sample = this.Samples[p.val];
       this.IGens.push(p);
     }
+    this.IBags = [];
+    for (i = 0; i < this.data.ibag.length - 1; i++) {
+      p = { gen: [], mod: [] };
+      for (j = this.data.ibag[i].gen; j < this.data.ibag[i + 1].gen; j++) p.gen.push(this.IGens[j]);
+      this.IBags.push(p);
+    }
+    this.Instruments = [];
+    for (i = 0; i < this.data.inst.length - 1; i++) {
+      p = { name: this.data.inst[i].name, idx: [] };
+      for (j = this.data.inst[i].idx; j < this.data.inst[i + 1].idx; j++) p.idx.push(this.IBags[j]);
+      this.Instruments.push(p);
+    }
     this.PGens = [];
     for (i = 0; i < this.data.pgen.length - 1; i++) {
       p = new PGen(this.data.pgen[i]);
       if (p.oper == 53) p.sample = this.Samples[p.val];
+      if (p.oper == 41) p.instr = this.Instruments[p.val];
       this.PGens.push(p);
     }
   };
@@ -492,7 +505,7 @@
       case 17:
         return ((g.val & 0x8000) ? g.val - 0x10000 : g.val) / 10 + '%'; 
       case 43:
-        return (g.val & 0xff) + ' - ' + (g.val >> 8)
+        return (g.val & 0xff) + ' - ' + (g.val >> 8);
     }
     return g.val;
   }

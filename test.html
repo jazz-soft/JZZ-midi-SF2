@@ -121,6 +121,9 @@ function populate() {
   c = new Cell(this.more, 1, 'Preset Gen', '', this.ref.PGens);
   c.populate = populate_gens;
   this.cells.push(c);
+  c = new Cell(this.more, 1, 'Instruments', '', this.ref.Instruments);
+  c.populate = populate_instr;
+  this.cells.push(c);
   c = new Cell(this.more, 1, 'Instr Gen', '', this.ref.IGens);
   c.populate = populate_gens;
   this.cells.push(c);
@@ -139,7 +142,28 @@ function populate_gens() {
   this.cells = [];
   var i, c;
   for (i = 0; i < this.ref.length; i++) {
-    this.cells.push(igenCell(this.more, this.ref[i]));
+    this.cells.push(genCell(this.more, this.ref[i]));
+  }
+}
+function populate_instr() {
+  this.cells = [];
+  var i, c;
+  for (i = 0; i < this.ref.length; i++) {
+    this.cells.push(instrCell(this.more, this.ref[i]));
+  }
+}
+function populate_bags() {
+  this.cells = [];
+  var i, c;
+  for (i = 0; i < this.ref.length; i++) {
+    this.cells.push(bagCell(this.more, this.ref[i]));
+  }
+}
+function populate_genmod() {
+  this.cells = [];
+  var i, c;
+  for (i = 0; i < this.ref.gen.length; i++) {
+    this.cells.push(genCell(this.more, this.ref.gen[i]));
   }
 }
 var svg_play = '<svg fill="#555" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7z"/><path d="M0 0h24v24H0z" fill="none"/></svg>';
@@ -197,12 +221,24 @@ function s2f(s) {
   f = f * 0x100 + s.charCodeAt(0);
   return f / 0x10000;
 }
-function igenCell(parent, x) {
+function genCell(parent, x) {
   if (x.oper == 53) {
     var cell = new Cell(parent, 1, x.name, x.sample.name, [ x.sample ]);
     cell.populate = populate_samples;
   }
+  else if (x.oper == 41) {
+    var cell = new Cell(parent, 1, x.name, x.instr.name, [ x.instr ]);
+    cell.populate = populate_instr;
+  }
   else new Cell(parent, 0, x.name, x.read);
+}
+function instrCell(parent, x) {
+  var cell = new Cell(parent, 1, x.name, '', x.idx);
+  cell.populate = populate_bags;
+}
+function bagCell(parent, x) {
+  var cell = new Cell(parent, 1, 'Gen/Mod', '', x);
+  cell.populate = populate_genmod;
 }
 </script>
 
