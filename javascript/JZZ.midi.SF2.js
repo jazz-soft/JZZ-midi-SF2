@@ -144,6 +144,17 @@
       if (p.oper == 41) p.instr = this.Instruments[p.val];
       this.PGens.push(p);
     }
+    this.PBags = [];
+    for (i = 0; i < this.data.pbag.length - 1; i++) {
+      p = { gen: [], mod: [] };
+      for (j = this.data.pbag[i].gen; j < this.data.pbag[i + 1].gen; j++) p.gen.push(this.PGens[j]);
+      this.PBags.push(p);
+    }
+    for (i = 0; i < this.data.phdr.length - 1; i++) {
+      p = new Preset(this.data.phdr[i]);
+      for (j = this.data.phdr[i].idx; j < this.data.phdr[i + 1].idx; j++) p.idx.push(this.PBags[j]);
+      this.push(p);
+    }
   };
 
   function _loadList(s) {
@@ -518,6 +529,14 @@
     initGen(this, a);
   }
   SF2.PGen = PGen;
+
+  function Preset(a) {
+    this.name = a.name;
+    this.prog = a.preset;
+    this.bank = a.bank;
+    this.idx = [];
+  }
+  SF2.Preset = Preset;
 
   function WAV() {
     var self = this;

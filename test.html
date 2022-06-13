@@ -118,6 +118,9 @@ function populate() {
   if (this.ref.data.ICMT) this.cells.push(new Cell(this.more, 0, 'Comments', this.ref.data.ICMT));
   if (this.ref.data.ISFT) this.cells.push(new Cell(this.more, 0, 'Software', this.ref.data.ISFT));
   this.cells.push(sampleCell(this.more, 'Sample Data', this.ref.data.smpl, this.ref.toWav(), this.ref.freq()));
+  c = new Cell(this.more, 1, 'Presets', '', this.ref);
+  c.populate = populate_presets;
+  this.cells.push(c);
   c = new Cell(this.more, 1, 'Preset Gen', '', this.ref.PGens);
   c.populate = populate_gens;
   this.cells.push(c);
@@ -164,6 +167,13 @@ function populate_genmod() {
   var i, c;
   for (i = 0; i < this.ref.gen.length; i++) {
     this.cells.push(genCell(this.more, this.ref.gen[i]));
+  }
+}
+function populate_presets() {
+  this.cells = [];
+  var i, c;
+  for (i = 0; i < this.ref.length; i++) {
+    this.cells.push(presetCell(this.more, this.ref[i]));
   }
 }
 var svg_play = '<svg fill="#555" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7z"/><path d="M0 0h24v24H0z" fill="none"/></svg>';
@@ -234,6 +244,10 @@ function genCell(parent, x) {
 }
 function instrCell(parent, x) {
   var cell = new Cell(parent, 1, x.name, '', x.idx);
+  cell.populate = populate_bags;
+}
+function presetCell(parent, x) {
+  var cell = new Cell(parent, 1, x.name, 'prog: ' + x.prog + ', bank: ' + x.bank, x.idx);
   cell.populate = populate_bags;
 }
 function bagCell(parent, x) {
