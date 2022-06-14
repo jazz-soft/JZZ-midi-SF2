@@ -117,31 +117,58 @@ function populate() {
   if (this.ref.data.ICOP) this.cells.push(new Cell(this.more, 0, 'Copyright', this.ref.data.ICOP));
   if (this.ref.data.ICMT) this.cells.push(new Cell(this.more, 0, 'Comments', this.ref.data.ICMT));
   if (this.ref.data.ISFT) this.cells.push(new Cell(this.more, 0, 'Software', this.ref.data.ISFT));
-  this.cells.push(sampleCell(this.more, 'Sample Data', this.ref.data.smpl, this.ref.toWav(), this.ref.freq()));
-  c = new Cell(this.more, 1, 'Presets', '', this.ref);
-  c.populate = populate_presets;
-  this.cells.push(c);
-  c = new Cell(this.more, 1, 'Preset Gen', '', this.ref.PGens);
-  c.populate = populate_gens;
-  this.cells.push(c);
-  c = new Cell(this.more, 1, 'Instruments', '', this.ref.Instruments);
-  c.populate = populate_instr;
-  this.cells.push(c);
-  c = new Cell(this.more, 1, 'Instr Gen', '', this.ref.IGens);
-  c.populate = populate_gens;
-  this.cells.push(c);
-  c = new Cell(this.more, 1, 'Samples', '', this.ref.Samples);
-  c.populate = populate_samples;
-  this.cells.push(c);
+  this.cells.push(sampleCell(this.more, 'Sample Data', '', this.ref.data.smpl, this.ref.toWav(), this.ref.freq()));
+  if (this.ref.length) {
+    c = new Cell(this.more, 1, 'Presets', '', this.ref);
+    c.populate = populate_presets;
+    this.cells.push(c);
+  }
+  if (this.ref.PMods.length) {
+    c = new Cell(this.more, 1, 'Preset Mod', '', this.ref.PMods);
+    c.populate = populate_mods;
+    this.cells.push(c);
+  }
+  if (this.ref.PGens.length) {
+    c = new Cell(this.more, 1, 'Preset Gen', '', this.ref.PGens);
+    c.populate = populate_gens;
+    this.cells.push(c);
+  }
+  if (this.ref.Instruments.length) {
+    c = new Cell(this.more, 1, 'Instruments', '', this.ref.Instruments);
+    c.populate = populate_instr;
+    this.cells.push(c);
+  }
+  if (this.ref.IMods.length) {
+    c = new Cell(this.more, 1, 'Instr Mod', '', this.ref.IMods);
+    c.populate = populate_mods;
+    this.cells.push(c);
+  }
+  if (this.ref.IGens.length) {
+    c = new Cell(this.more, 1, 'Instr Gen', '', this.ref.IGens);
+    c.populate = populate_gens;
+    this.cells.push(c);
+  }
+  if (this.ref.Samples.length) {
+    c = new Cell(this.more, 1, 'Samples', '', this.ref.Samples);
+    c.populate = populate_samples;
+    this.cells.push(c);
+  }
 }
 function populate_samples() {
   this.cells = [];
   var i, c;
   for (i = 0; i < this.ref.length; i++) {
-    this.cells.push(sampleCell(this.more, this.ref[i].name, this.ref[i].sample, this.ref[i].toWav(), this.ref[i].rate));
+    this.cells.push(sampleCell(this.more, this.ref[i].name, '', this.ref[i].sample, this.ref[i].toWav(), this.ref[i].rate));
   }
 }
 function populate_gens() {
+  this.cells = [];
+  var i, c;
+  for (i = 0; i < this.ref.length; i++) {
+    this.cells.push(genCell(this.more, this.ref[i]));
+  }
+}
+function populate_mods() {
   this.cells = [];
   var i, c;
   for (i = 0; i < this.ref.length; i++) {
@@ -165,6 +192,9 @@ function populate_bags() {
 function populate_genmod() {
   this.cells = [];
   var i, c;
+  for (i = 0; i < this.ref.mod.length; i++) {
+    this.cells.push(genCell(this.more, this.ref.mod[i]));
+  }
   for (i = 0; i < this.ref.gen.length; i++) {
     this.cells.push(genCell(this.more, this.ref.gen[i]));
   }
@@ -178,8 +208,9 @@ function populate_presets() {
 }
 var svg_play = '<svg fill="#555" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8 5v14l11-7z"/><path d="M0 0h24v24H0z" fill="none"/></svg>';
 var svg_stop = '<svg fill="#555" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M0 0h24v24H0z" fill="none"/><path d="M6 6h12v12H6z"/></svg>';
-function sampleCell(parent, title, data, wav, rate) {
-  var cell = new Cell(parent, 0, title, '[ ' + data.length + ' ]');
+function sampleCell(parent, title, txt, data, wav, rate) {
+  if (txt) txt += ' ';
+  var cell = new Cell(parent, 0, title, txt + '[ ' + data.length + ' ]');
   var a, p, q;
   if (wav) {
     a = document.createElement('a');
@@ -233,12 +264,11 @@ function s2f(s) {
 }
 function genCell(parent, x) {
   if (x.oper == 53) {
-    var cell = new Cell(parent, 1, x.name, x.sample.name, [ x.sample ]);
-    cell.populate = populate_samples;
+    sampleCell(parent, x.name, x.sample.name, x.sample.sample, x.sample.toWav(), x.sample.rate);
   }
   else if (x.oper == 41) {
-    var cell = new Cell(parent, 1, x.name, x.instr.name, [ x.instr ]);
-    cell.populate = populate_instr;
+    var cell = new Cell(parent, 1, x.name, x.instr.name, x.instr.idx);
+    cell.populate = populate_bags;
   }
   else new Cell(parent, 0, x.name, x.read);
 }

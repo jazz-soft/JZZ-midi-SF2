@@ -125,16 +125,24 @@
       if (p.oper == 53) p.sample = this.Samples[p.val];
       this.IGens.push(p);
     }
+    this.IMods = [];
+    for (i = 0; i < this.data.imod.length - 1; i++) {
+      p = new IMod(this.data.imod[i]);
+      this.IMods.push(p);
+    }
     this.IBags = [];
     for (i = 0; i < this.data.ibag.length - 1; i++) {
       p = { gen: [], mod: [] };
+      for (j = this.data.ibag[i].mod; j < this.data.ibag[i + 1].mod; j++) p.mod.push(this.IMods[j]);
       for (j = this.data.ibag[i].gen; j < this.data.ibag[i + 1].gen; j++) p.gen.push(this.IGens[j]);
       this.IBags.push(p);
     }
     this.Instruments = [];
     for (i = 0; i < this.data.inst.length - 1; i++) {
       p = { name: this.data.inst[i].name, idx: [] };
-      for (j = this.data.inst[i].idx; j < this.data.inst[i + 1].idx; j++) p.idx.push(this.IBags[j]);
+      for (j = this.data.inst[i].idx; j < this.data.inst[i + 1].idx; j++) {
+        if (this.IBags[j].gen.length || this.IBags[j].mod.length) p.idx.push(this.IBags[j]);
+      }
       this.Instruments.push(p);
     }
     this.PGens = [];
@@ -144,15 +152,23 @@
       if (p.oper == 41) p.instr = this.Instruments[p.val];
       this.PGens.push(p);
     }
+    this.PMods = [];
+    for (i = 0; i < this.data.pmod.length - 1; i++) {
+      p = new PMod(this.data.pmod[i]);
+      this.PMods.push(p);
+    }
     this.PBags = [];
     for (i = 0; i < this.data.pbag.length - 1; i++) {
       p = { gen: [], mod: [] };
+      for (j = this.data.pbag[i].mod; j < this.data.pbag[i + 1].mod; j++) p.mod.push(this.PMods[j]);
       for (j = this.data.pbag[i].gen; j < this.data.pbag[i + 1].gen; j++) p.gen.push(this.PGens[j]);
       this.PBags.push(p);
     }
     for (i = 0; i < this.data.phdr.length - 1; i++) {
       p = new Preset(this.data.phdr[i]);
-      for (j = this.data.phdr[i].idx; j < this.data.phdr[i + 1].idx; j++) p.idx.push(this.PBags[j]);
+      for (j = this.data.phdr[i].idx; j < this.data.phdr[i + 1].idx; j++) {
+        if (this.PBags[j].gen.length || this.PBags[j].mod.length) p.idx.push(this.PBags[j]);
+      }
       this.push(p);
     }
   };
@@ -342,12 +358,12 @@
   function IMOD(a, b, c, d, e) {
     this.src = a;
     this.dest = b;
-    this.amt = c;
+    this.val = c;
     this.mod = d;
     this.oper = e;
   }
   IMOD.prototype.toString = function() {
-    return ['src:', this.src, 'dest:', this.dest, 'amt:', this.amt, 'mod:', this.mod, 'oper:', this.oper].join(' ');
+    return ['src:', this.src, 'dest:', this.dest, 'val:', this.val, 'mod:', this.mod, 'oper:', this.oper].join(' ');
   };
   function _imod(s) {
     var a = [];
@@ -529,6 +545,29 @@
     initGen(this, a);
   }
   SF2.PGen = PGen;
+
+  function initMod(g, a) {
+    g.src = a.src;
+    g.dest = a.dest;
+    g.oper = a.oper;
+    g.val = a.val;
+    g.mod = a.mod;
+    if (typeof g.name == 'undefined') g.name = g.oper;
+    g.read = readMod(g);
+//console.log(a, g);
+  }
+  function readMod(g) {
+    return 'MOD ' + g.val;
+  }
+  function IMod(a) {
+    initMod(this, a);
+  }
+  SF2.IMod = IMod;
+
+  function PMod(a) {
+    initMod(this, a);
+  }
+  SF2.PMod = PMod;
 
   function Preset(a) {
     this.name = a.name;
