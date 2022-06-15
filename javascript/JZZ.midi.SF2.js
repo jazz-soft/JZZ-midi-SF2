@@ -507,9 +507,23 @@
   function initGen(g, a) {
     g.oper = a.oper;
     g.val = a.val;
-    g.name = {
+    g.name = genTitle(g.oper);
+    g.text = genText(g);
+  }
+  function genTitle(x) {
+    return {
+      2: 'Start Loop Offset',
+      3: 'End Loop Offset',
+      5: 'Mod to Pitch',
+      6: 'Vibrato to Pitch',
+      8: 'Filter Cutoff',
+      9: 'Filter Resonance',
+      11: 'Mod to Filter Cutoff',
+      15: 'Chorus Send',
       16: 'Reverb Send',
       17: 'Pan',
+      22: 'Mod Frequency',
+      24: 'Vibrato Frequency',
       34: 'Attack (v)',
       35: 'Hold (v)',
       36: 'Decay (v)',
@@ -523,11 +537,10 @@
       48: 'Attenuation',
       53: 'Sample',
       54: 'Sample Flags'
-    }[g.oper];
-    if (typeof g.name == 'undefined') g.name = g.oper;
-    g.read = readGen(g);
+    }[x] || x;
   }
-  function readGen(g) {
+
+  function genText(g) {
     switch (g.oper) {
       case 17:
         return ((g.val & 0x8000) ? g.val - 0x10000 : g.val) / 10 + '%'; 
@@ -552,12 +565,21 @@
     g.oper = a.oper;
     g.val = a.val;
     g.mod = a.mod;
-    if (typeof g.name == 'undefined') g.name = g.oper;
-    g.read = readMod(g);
-//console.log(a, g);
+    g.cc = !!(g.src & 0x80);
+    if (g.cc) {
+      g.name = 'xC ' + ('0' + (g.src & 0x7f).toString(16).toUpperCase()).substr(-2) + ' xx';
+    }
+    else {
+        g.name = {
+        0: 'None', 2: 'Velocity', 3: 'Key',
+        10: 'xA xx xx', 13: 'xD xx',
+        14: 'xE xx xx', 16: 'RPN 0'
+      }[g.src & 0x7f] || 'Unknown ' + (g.src & 0x7f);
+    }
+    g.text = modText(g);
   }
-  function readMod(g) {
-    return 'MOD ' + g.val;
+  function modText(g) {
+    return genTitle(g.dest);
   }
   function IMod(a) {
     initMod(this, a);

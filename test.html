@@ -270,7 +270,7 @@ function genCell(parent, x) {
     var cell = new Cell(parent, 1, x.name, x.instr.name, x.instr.idx);
     cell.populate = populate_bags;
   }
-  else new Cell(parent, 0, x.name, x.read);
+  else new Cell(parent, 0, x.name, x.text);
 }
 function instrCell(parent, x) {
   var cell = new Cell(parent, 1, x.name, '', x.idx);
