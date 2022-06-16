@@ -132,9 +132,12 @@
     }
     this.IBags = [];
     for (i = 0; i < this.data.ibag.length - 1; i++) {
-      p = { gen: [], mod: [] };
+      p = { gen: [], mod: [], text: '' };
       for (j = this.data.ibag[i].mod; j < this.data.ibag[i + 1].mod; j++) p.mod.push(this.IMods[j]);
-      for (j = this.data.ibag[i].gen; j < this.data.ibag[i + 1].gen; j++) p.gen.push(this.IGens[j]);
+      for (j = this.data.ibag[i].gen; j < this.data.ibag[i + 1].gen; j++) {
+        p.gen.push(this.IGens[j]);
+        if (this.IGens[j].oper == 43 && !p.text) p.text = this.IGens[j].text;
+      }
       this.IBags.push(p);
     }
     this.Instruments = [];
@@ -159,9 +162,12 @@
     }
     this.PBags = [];
     for (i = 0; i < this.data.pbag.length - 1; i++) {
-      p = { gen: [], mod: [] };
+      p = { gen: [], mod: [], text: '' };
       for (j = this.data.pbag[i].mod; j < this.data.pbag[i + 1].mod; j++) p.mod.push(this.PMods[j]);
-      for (j = this.data.pbag[i].gen; j < this.data.pbag[i + 1].gen; j++) p.gen.push(this.PGens[j]);
+      for (j = this.data.pbag[i].gen; j < this.data.pbag[i + 1].gen; j++) {
+        p.gen.push(this.PGens[j]);
+        if (this.PGens[j].oper == 41 && !p.text) p.text = this.PGens[j].instr.name;
+      }
       this.PBags.push(p);
     }
     for (i = 0; i < this.data.phdr.length - 1; i++) {
@@ -508,7 +514,7 @@
     g.oper = a.oper;
     g.val = a.val;
     g.name = genTitle(g.oper);
-    g.text = genText(g);
+    g.text = genText(g.oper, g.val);
   }
   function genTitle(x) {
     return {
@@ -540,14 +546,14 @@
     }[x] || x;
   }
 
-  function genText(g) {
-    switch (g.oper) {
-      case 17:
-        return ((g.val & 0x8000) ? g.val - 0x10000 : g.val) / 10 + '%'; 
+  function genText(op, v) {
+    switch (op) {
+      case 15: case 16: case 17:
+        return ((v & 0x8000) ? v - 0x10000 : v) / 10 + '%'; 
       case 43:
-        return (g.val & 0xff) + ' - ' + (g.val >> 8);
+        return (v & 0xff) + ' - ' + (v >> 8);
     }
-    return g.val;
+    return v;
   }
   function IGen(a) {
     initGen(this, a);
@@ -579,7 +585,11 @@
     g.text = modText(g);
   }
   function modText(g) {
-    return genTitle(g.dest);
+    var s = genTitle(g.dest);
+    var m = (g.src & 0x20) ? -1 : 0;
+    m = (g.src & 0x10) ? m + ' - 1' : '1 - ' + m;
+    m = (['linear', 'concave', 'convex', 'switch'][g.src >> 10] || '*') + ' ' + m;
+    return s + ' (' + m + '): ' + genText(g.dest, g.val);
   }
   function IMod(a) {
     initMod(this, a);
