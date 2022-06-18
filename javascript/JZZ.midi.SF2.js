@@ -109,27 +109,11 @@
     //p += len + 8;
 
     this.Samples = [];
-    for (i = 0; i < this.data.shdr.length - 1; i++) this.Samples.push(new Sample(this.data.shdr[i]));
-    for (i = 0; i < this.Samples.length; i++) {
-      p = this.Samples[i];
-      if (typeof p.link != 'undefined') p.link = this.Samples[p.link];
-      p.sample = this.data.smpl.substring(p.start * 2, p.end * 2); // 16-bit samples
-      p.end -= p.start;
-      p.startlp -= p.start;
-      p.endlp -= p.start;
-      p.start = 0;
-    }
+    for (i = 0; i < this.data.shdr.length - 1; i++) this.Samples.push(new Sample(this.data.shdr[i], this));
     this.IGens = [];
-    for (i = 0; i < this.data.igen.length - 1; i++) {
-      p = new IGen(this.data.igen[i]);
-      if (p.oper == 53) p.sample = this.Samples[p.val];
-      this.IGens.push(p);
-    }
+    for (i = 0; i < this.data.igen.length - 1; i++) this.IGens.push(new IGen(this.data.igen[i], this));
     this.IMods = [];
-    for (i = 0; i < this.data.imod.length - 1; i++) {
-      p = new IMod(this.data.imod[i]);
-      this.IMods.push(p);
-    }
+    for (i = 0; i < this.data.imod.length - 1; i++) this.IMods.push(new IMod(this.data.imod[i]));
     this.IBags = [];
     for (i = 0; i < this.data.ibag.length - 1; i++) {
       p = { gen: [], mod: [], text: '' };
@@ -149,17 +133,9 @@
       this.Instruments.push(p);
     }
     this.PGens = [];
-    for (i = 0; i < this.data.pgen.length - 1; i++) {
-      p = new PGen(this.data.pgen[i]);
-      if (p.oper == 53) p.sample = this.Samples[p.val];
-      if (p.oper == 41) p.instr = this.Instruments[p.val];
-      this.PGens.push(p);
-    }
+    for (i = 0; i < this.data.pgen.length - 1; i++) this.PGens.push(new PGen(this.data.pgen[i], this));
     this.PMods = [];
-    for (i = 0; i < this.data.pmod.length - 1; i++) {
-      p = new PMod(this.data.pmod[i]);
-      this.PMods.push(p);
-    }
+    for (i = 0; i < this.data.pmod.length - 1; i++) this.PMods.push(new PMod(this.data.pmod[i]));
     this.PBags = [];
     for (i = 0; i < this.data.pbag.length - 1; i++) {
       p = { gen: [], mod: [], text: '' };
@@ -484,7 +460,7 @@
     return '';
   };
 
-  function Sample(a) {
+  function Sample(a, sf) {
     this.name = a.name;
     this.start = a.start;
     this.end = a.end;
@@ -494,7 +470,12 @@
     this.key = a.key;
     this.corr = a.corr;
     this.type = a.type;
-    if (this.type & 14) this.link = a.link;
+    if (this.type & 14) this.link =  sf.Samples[a.link];
+    this.sample = sf.data.smpl.substring(this.start * 2, this.end * 2); // 16-bit samples
+    this.end -= this.start;
+    this.startlp -= this.start;
+    this.endlp -= this.start;
+    this.start = 0;
   }
   Sample.prototype.toWav = function() {
     if (this.sample.substr(0, 4) == 'OggS') return '';
@@ -510,12 +491,6 @@
   };
   SF2.Sample = Sample;
 
-  function initGen(g, a) {
-    g.oper = a.oper;
-    g.val = a.val;
-    g.name = genTitle(g.oper);
-    g.text = genText(g.oper, g.val);
-  }
   function genTitle(x) {
     return {
       2: 'Start Loop Offset',
@@ -555,13 +530,21 @@
     }
     return v;
   }
-  function IGen(a) {
-    initGen(this, a);
+  function IGen(a, sf) {
+    this.oper = a.oper;
+    this.val = a.val;
+    if (this.oper == 53) this.sample = sf.Samples[this.val];
+    this.name = genTitle(this.oper);
+    this.text = genText(this.oper, this.val);
   }
   SF2.IGen = IGen;
 
-  function PGen(a) {
-    initGen(this, a);
+  function PGen(a, sf) {
+    this.oper = a.oper;
+    this.val = a.val;
+    if (this.oper == 41) this.instr = sf.Instruments[this.val];
+    this.name = genTitle(this.oper);
+    this.text = genText(this.oper, this.val);
   }
   SF2.PGen = PGen;
 
