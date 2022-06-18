@@ -83,7 +83,7 @@
   SF2.prototype.constructor = SF2;
   SF2.prototype.load = function(s) {
     var len;
-    var p, i, j;
+    var p, i;
     this.data = {};
     if (s.length < 12 || s.substr(0, 4) != 'RIFF' || s.substr(8, 4) != 'sfbk') _error('Not a SoundFont file');
     len = _s42n(s.substr(4, 4));
@@ -114,45 +114,17 @@
     for (i = 0; i < this.data.igen.length - 1; i++) this.IGens.push(new IGen(this.data.igen[i], this));
     this.IMods = [];
     for (i = 0; i < this.data.imod.length - 1; i++) this.IMods.push(new IMod(this.data.imod[i]));
-    this.IBags = [];
-    for (i = 0; i < this.data.ibag.length - 1; i++) {
-      p = { gen: [], mod: [], text: '' };
-      for (j = this.data.ibag[i].mod; j < this.data.ibag[i + 1].mod; j++) p.mod.push(this.IMods[j]);
-      for (j = this.data.ibag[i].gen; j < this.data.ibag[i + 1].gen; j++) {
-        p.gen.push(this.IGens[j]);
-        if (this.IGens[j].oper == 43 && !p.text) p.text = this.IGens[j].text;
-      }
-      this.IBags.push(p);
-    }
+    this.IZones = [];
+    for (i = 0; i < this.data.ibag.length - 1; i++) this.IZones.push(new IZone(this.data.ibag[i], this.data.ibag[i + 1], this));
     this.Instruments = [];
-    for (i = 0; i < this.data.inst.length - 1; i++) {
-      p = { name: this.data.inst[i].name, idx: [] };
-      for (j = this.data.inst[i].idx; j < this.data.inst[i + 1].idx; j++) {
-        if (this.IBags[j].gen.length || this.IBags[j].mod.length) p.idx.push(this.IBags[j]);
-      }
-      this.Instruments.push(p);
-    }
+    for (i = 0; i < this.data.inst.length - 1; i++) this.Instruments.push(new Instrument(this.data.inst[i], this.data.inst[i + 1], this));
     this.PGens = [];
     for (i = 0; i < this.data.pgen.length - 1; i++) this.PGens.push(new PGen(this.data.pgen[i], this));
     this.PMods = [];
     for (i = 0; i < this.data.pmod.length - 1; i++) this.PMods.push(new PMod(this.data.pmod[i]));
-    this.PBags = [];
-    for (i = 0; i < this.data.pbag.length - 1; i++) {
-      p = { gen: [], mod: [], text: '' };
-      for (j = this.data.pbag[i].mod; j < this.data.pbag[i + 1].mod; j++) p.mod.push(this.PMods[j]);
-      for (j = this.data.pbag[i].gen; j < this.data.pbag[i + 1].gen; j++) {
-        p.gen.push(this.PGens[j]);
-        if (this.PGens[j].oper == 41 && !p.text) p.text = this.PGens[j].instr.name;
-      }
-      this.PBags.push(p);
-    }
-    for (i = 0; i < this.data.phdr.length - 1; i++) {
-      p = new Preset(this.data.phdr[i]);
-      for (j = this.data.phdr[i].idx; j < this.data.phdr[i + 1].idx; j++) {
-        if (this.PBags[j].gen.length || this.PBags[j].mod.length) p.idx.push(this.PBags[j]);
-      }
-      this.push(p);
-    }
+    this.PZones = [];
+    for (i = 0; i < this.data.pbag.length - 1; i++) this.PZones.push(new PZone(this.data.pbag[i], this.data.pbag[i + 1], this));
+    for (i = 0; i < this.data.phdr.length - 1; i++) this.push(new Preset(this.data.phdr[i], this.data.phdr[i + 1], this));
   };
 
   function _loadList(s) {
@@ -584,11 +556,49 @@
   }
   SF2.PMod = PMod;
 
-  function Preset(a) {
+  function IZone(a, b, sf) {
+    var i;
+    this.gen = [];
+    this.mod = [];
+    this.text = '';
+    for (i = a.mod; i < b.mod; i++) this.mod.push(sf.IMods[i]);
+    for (i = a.gen; i < b.gen; i++) {
+      this.gen.push(sf.IGens[i]);
+      if (sf.IGens[i].oper == 43 && !this.text) this.text = sf.IGens[i].text;
+    }
+  }
+  SF2.IZone = IZone;
+
+  function PZone(a, b, sf) {
+    var i;
+    this.gen = [];
+    this.mod = [];
+    this.text = '';
+    for (i = a.mod; i < b.mod; i++) this.mod.push(sf.PMods[i]);
+    for (i = a.gen; i < b.gen; i++) {
+      this.gen.push(sf.PGens[i]);
+      if (sf.PGens[i].oper == 41 && !this.text) this.text = sf.PGens[i].instr.name;
+    }
+  }
+  SF2.PZone = PZone;
+
+  function Instrument(a, b, sf) {
+    this.name = a.name;
+    this.idx = [];
+    for (var i = a.idx; i < b.idx; i++) {
+      if (sf.IZones[i].gen.length || sf.IZones[i].mod.length) this.idx.push(sf.IZones[i]);
+    }
+  }
+  SF2.Instrument = Instrument;
+
+  function Preset(a, b, sf) {
     this.name = a.name;
     this.prog = a.preset;
     this.bank = a.bank;
     this.idx = [];
+    for (var i = a.idx; i < b.idx; i++) {
+      if (sf.PZones[i].gen.length || sf.PZones[i].mod.length) this.idx.push(sf.PZones[i]);
+    }
   }
   SF2.Preset = Preset;
 
