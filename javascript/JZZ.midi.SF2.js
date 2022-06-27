@@ -32,6 +32,9 @@
     phdr: 'Presets', pbag: 'Preset Index', pmod: 'Preset Mod', pgen: 'Preset Gen',
     inst: 'Instruments', ibag: 'Instr Index', imod: 'Instr Mod', igen: 'Instr Gen', shdr: 'Samples'
   };
+  var _info_tags = ['ifil', 'isng', 'INAM', 'irom', 'iver', 'ICRD', 'IENG', 'IPRD', 'ICOP', 'ICMT', 'ISFT'];
+  var _pdta_tags = ['phdr', 'pbag', 'pmod', 'pgen', 'inst', 'ibag', 'imod', 'igen', 'shdr'];
+
   function _u8a2s(u) {
     var s = '';
     var len = u.byteLength;
@@ -106,7 +109,6 @@
     _expect(s.substr(p + 8, 4), 'pdta');
     len = _s42n(s.substr(p + 4, 4));
     _loadPDTA(this.data, s.substr(p + 12, len - 4));
-    //p += len + 8;
 
     this.Samples = [];
     for (i = 0; i < this.data.shdr.length - 1; i++) this.Samples.push(new Sample(this.data.shdr[i], this));
@@ -125,6 +127,12 @@
     this.PZones = [];
     for (i = 0; i < this.data.pbag.length - 1; i++) this.PZones.push(new PZone(this.data.pbag[i], this.data.pbag[i + 1], this));
     for (i = 0; i < this.data.phdr.length - 1; i++) this.push(new Preset(this.data.phdr[i], this.data.phdr[i + 1], this));
+  };
+
+  SF2.prototype.dump = function() {
+    var s = _dumpINFO(this.data);
+    s = 'RIFF' + _n2s4(s.length + 4) + 'sfbk' + s;
+    return s;
   };
 
   function _loadList(s) {
@@ -156,6 +164,24 @@
       }
       d[t] = x;
     }
+  }
+  function _dumpINFO(d) {
+    var i, t, z;
+    var s = '';
+    for (i = 0; i < _info_tags.length; i++) {
+      t = _info_tags[i];
+      if (t in d) {
+        if (t == 'ifil' || t == 'iver') {
+          s += t + _n2s4(4) + _n2s2(d[t][0]) + _n2s2(d[t][1]);
+        }
+        else {
+          z = d[t] + '\0';
+          if (z.length & 1) z += '\0';
+          s += t + _n2s4(z.length) + z;
+        }
+      }
+    }
+    return 'LIST' + _n2s4(s.length + 4) + 'INFO' + s;
   }
   function _loadSDTA(d, s) {
     var a = _loadList(s);
@@ -394,13 +420,11 @@
   }
 
   function _n2v(a) { return a ? a[0] + ('.0' + a[1]).substr(0, 3) : ''; }
-  var _info_tags = ['isng', 'INAM', 'irom', 'iver', 'ICRD', 'IENG', 'IPRD', 'ICOP', 'ICMT', 'ISFT'];
-  var _pdta_tags = ['phdr', 'pbag', 'pmod', 'pgen', 'inst', 'ibag', 'imod', 'igen', 'shdr'];
 
   SF2.prototype.toString = function() {
     var i, j, x;
     var a = ['SOUNDFONT ' + _n2v(this.data.ifil)];
-    for (i = 0; i < _info_tags.length; i++) if (this.data[_info_tags[i]]) a.push('  ' + (_info[_info_tags[i]] + ':         ').substr(0, 14) + this.data[_info_tags[i]]);
+    for (i = 1; i < _info_tags.length; i++) if (this.data[_info_tags[i]]) a.push('  ' + (_info[_info_tags[i]] + ':         ').substr(0, 14) + this.data[_info_tags[i]]);
     a.push('  Sample data:  [ ' + this.data.smpl.length + ' ]');
     for (i = 0; i < _pdta_tags.length; i++) {
       x = this.data[_pdta_tags[i]];
