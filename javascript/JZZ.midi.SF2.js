@@ -47,6 +47,19 @@
     if (!(self instanceof SF2)) {
       self = new SF2();
     }
+    if (arguments.length == 0) {
+      self.Header = { ifil: [2, 1], isng: 'EMU8000', INAM: 'SF' };
+      self.Samples = [];
+      self.IGens = [];
+      self.IMods = [];
+      self.IZones = [];
+      self.Instruments = [];
+      self.PGens = [];
+      self.PMods = [];
+      self.PZones = [];
+      self.data = {};
+      return self;
+    }
     if (arguments.length == 1) {
       if (arguments[0] instanceof SF2) {
         return arguments[0].copy();
@@ -110,6 +123,8 @@
     len = _s42n(s.substr(p + 4, 4));
     _loadPDTA(this.data, s.substr(p + 12, len - 4));
 
+    this.Header = {};
+    for (i = 0; i < _info_tags.length; i++) if (this.data[_info_tags[i]]) this.Header[_info_tags[i]] = this.data[_info_tags[i]];
     this.Samples = [];
     for (i = 0; i < this.data.shdr.length - 1; i++) this.Samples.push(new Sample(this.data.shdr[i], this));
     this.IGens = [];
@@ -129,8 +144,15 @@
     for (i = 0; i < this.data.phdr.length - 1; i++) this.push(new Preset(this.data.phdr[i], this.data.phdr[i + 1], this));
   };
 
+  SF2.prototype.refresh = function() {
+    var i;
+    for (i = 0; i < _info_tags.length; i++) if (this.Header[_info_tags[i]]) this.data[_info_tags[i]] = this.Header[_info_tags[i]];
+    this.data.smpl = '';
+    for (i = 0; i < _pdta_tags.length; i++) this.data[_pdta_tags[i]] = [];
+  };
+
   SF2.prototype.dump = function() {
-    var s = _dumpINFO(this.data);
+    var s = _dumpINFO(this.data) + _dumpSDTA(this.data) + _dumpPDTA(this.data);
     s = 'RIFF' + _n2s4(s.length + 4) + 'sfbk' + s;
     return s;
   };
@@ -186,6 +208,7 @@
   function _loadSDTA(d, s) {
     var a = _loadList(s);
     var i, t, x;
+    d.smpl = '';
     for (i = 0; i < a.length; i++) {
       t = a[i][0];
       x = a[i][1];
@@ -194,6 +217,11 @@
       d[t] = x;
     }
   }
+  function _dumpSDTA(d) {
+    var s = d.smpl ? '' : '';
+    return 'LIST' + _n2s4(s.length + 4) + 'SDTA' + s;
+  }
+
   function _loadPDTA(d, s) {
     var a = _loadList(s);
     var i, t, x;
@@ -204,6 +232,9 @@
       if (!_pdta[t]) _error('Unexpected chunk: ' + t);
       d[t] = { phdr: _phdr, pbag: _pbag, pmod: _pmod, pgen: _pgen, inst: _inst, ibag: _ibag, imod: _imod, igen: _igen, shdr: _shdr }[t](x);
     }
+  }
+  function _dumpPDTA(d) {
+    return '';
   }
 
   function PHDR(a) {
