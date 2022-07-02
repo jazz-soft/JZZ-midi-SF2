@@ -219,7 +219,7 @@
   }
   function _dumpSDTA(d) {
     var s = d.smpl ? '' : '';
-    return 'LIST' + _n2s4(s.length + 4) + 'SDTA' + s;
+    return 'LIST' + _n2s4(s.length + 4) + 'sdta' + s;
   }
 
   function _loadPDTA(d, s) {
@@ -234,7 +234,14 @@
     }
   }
   function _dumpPDTA(d) {
-    return '';
+    var i, t, x;
+    var s = '';
+    for (i = 0; i <_pdta_tags.length; i++) {
+      t = _pdta_tags[i];
+      if (!d[t]) continue;
+      s += { phdr: __phdr, pbag: __pbag, pmod: __pmod, pgen: __pgen, inst: __inst, ibag: __ibag, imod: __imod, igen: __igen, shdr: __shdr }[t](d[t]);
+    }
+    return 'LIST' + _n2s4(s.length + 4) + 'pdta' + s;
   }
 
   function PHDR(a) {
@@ -274,6 +281,9 @@
     }
     return a;
   }
+  function __phdr(d) {
+    return '';
+  }
 
   function PBAG(a, b) {
     this.gen = a;
@@ -290,6 +300,9 @@
       p += 4;
     }
     return a;
+  }
+  function __pbag(d) {
+    return '';
   }
 
   function PMOD(a, b, c, d, e) {
@@ -311,6 +324,9 @@
     }
     return a;
   }
+  function __pmod(d) {
+    return '';
+  }
 
   function PGEN(a, b) {
     this.oper = a;
@@ -327,6 +343,9 @@
       p += 4;
     }
     return a;
+  }
+  function __pgen(d) {
+    return '';
   }
 
   function INST(a, b) {
@@ -348,6 +367,9 @@
     }
     return a;
   }
+  function __inst(d) {
+    return '';
+  }
 
   function IBAG(a, b) {
     this.gen = a;
@@ -364,6 +386,9 @@
       p += 4;
     }
     return a;
+  }
+  function __ibag(d) {
+    return '';
   }
 
   function IMOD(a, b, c, d, e) {
@@ -385,6 +410,9 @@
     }
     return a;
   }
+  function __imod(d) {
+    return '';
+  }
 
   function IGEN(a, b) {
     this.oper = a;
@@ -401,6 +429,9 @@
       p += 4;
     }
     return a;
+  }
+  function __igen(d) {
+    return '';
   }
 
   function SHDR(a) {
@@ -448,6 +479,9 @@
       a.push(new SHDR(x));
     }
     return a;
+  }
+  function __shdr(d) {
+    return '';
   }
 
   function _n2v(a) { return a ? a[0] + ('.0' + a[1]).substr(0, 3) : ''; }
