@@ -20,6 +20,7 @@
   function _s22n(s) { return s.charCodeAt(0) + 0x100 * s.charCodeAt(1); }
   function _s42n(s) { return s.charCodeAt(0) + 0x100 * s.charCodeAt(1) + 0x10000 * s.charCodeAt(2) + 0x1000000 * s.charCodeAt(3); }
   function _n2s2(n) { return String.fromCharCode(n & 0xff) + String.fromCharCode(n >> 8); }
+  function _s20(s) { return (s + '\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0').substring(0, 20); }
   function _n2s4(n) {
     return String.fromCharCode(n & 0xff) + String.fromCharCode((n >> 8) & 0xff) + String.fromCharCode((n >> 16) & 0xff) + String.fromCharCode((n >> 24) & 0xff);
   }
@@ -234,7 +235,7 @@
     }
   }
   function _dumpPDTA(d) {
-    var i, t, x;
+    var i, t;
     var s = '';
     for (i = 0; i <_pdta_tags.length; i++) {
       t = _pdta_tags[i];
@@ -282,7 +283,19 @@
     return a;
   }
   function __phdr(d) {
-    return '';
+    var i, x;
+    var s = '';
+    for (i = 0; i < d.length; i++) {
+      x = d[i];
+      s += _s20(x.name);
+      s += _n2s2(x.preset);
+      s += _n2s2(x.bank);
+      s += _n2s2(x.idx);
+      s += _n2s4(x.library);
+      s += _n2s4(x.genre);
+      s += _n2s4(x.morph);
+    }
+    return 'phdr' + _n2s4(s.length) + s;
   }
 
   function PBAG(a, b) {
@@ -302,7 +315,14 @@
     return a;
   }
   function __pbag(d) {
-    return '';
+    var i, x;
+    var s = '';
+    for (i = 0; i < d.length; i++) {
+      x = d[i];
+      s += _n2s2(x.gen);
+      s += _n2s2(x.mod);
+    }
+    return 'pbag' + _n2s4(s.length) + s;
   }
 
   function PMOD(a, b, c, d, e) {
@@ -325,7 +345,17 @@
     return a;
   }
   function __pmod(d) {
-    return '';
+    var i, x;
+    var s = '';
+    for (i = 0; i < d.length; i++) {
+      x = d[i];
+      s += _n2s2(x.src);
+      s += _n2s2(x.dest);
+      s += _n2s2(x.val);
+      s += _n2s2(x.mod);
+      s += _n2s2(x.oper);
+    }
+    return 'pmod' + _n2s4(s.length) + s;
   }
 
   function PGEN(a, b) {
@@ -345,7 +375,14 @@
     return a;
   }
   function __pgen(d) {
-    return '';
+    var i, x;
+    var s = '';
+    for (i = 0; i < d.length; i++) {
+      x = d[i];
+      s += _n2s2(x.oper);
+      s += _n2s2(x.val);
+    }
+    return 'pgen' + _n2s4(s.length) + s;
   }
 
   function INST(a, b) {
@@ -368,7 +405,14 @@
     return a;
   }
   function __inst(d) {
-    return '';
+    var i, x;
+    var s = '';
+    for (i = 0; i < d.length; i++) {
+      x = d[i];
+      s += _s20(x.name);
+      s += _n2s2(x.idx);
+    }
+    return 'inst' + _n2s4(s.length) + s;
   }
 
   function IBAG(a, b) {
@@ -388,7 +432,14 @@
     return a;
   }
   function __ibag(d) {
-    return '';
+    var i, x;
+    var s = '';
+    for (i = 0; i < d.length; i++) {
+      x = d[i];
+      s += _n2s2(x.gen);
+      s += _n2s2(x.mod);
+    }
+    return 'ibag' + _n2s4(s.length) + s;
   }
 
   function IMOD(a, b, c, d, e) {
@@ -411,7 +462,17 @@
     return a;
   }
   function __imod(d) {
-    return '';
+    var i, x;
+    var s = '';
+    for (i = 0; i < d.length; i++) {
+      x = d[i];
+      s += _n2s2(x.src);
+      s += _n2s2(x.dest);
+      s += _n2s2(x.val);
+      s += _n2s2(x.mod);
+      s += _n2s2(x.oper);
+    }
+    return 'imod' + _n2s4(s.length) + s;
   }
 
   function IGEN(a, b) {
@@ -431,7 +492,14 @@
     return a;
   }
   function __igen(d) {
-    return '';
+    var i, x;
+    var s = '';
+    for (i = 0; i < d.length; i++) {
+      x = d[i];
+      s += _n2s2(x.oper);
+      s += _n2s2(x.val);
+    }
+    return 'igen' + _n2s4(s.length) + s;
   }
 
   function SHDR(a) {
@@ -481,7 +549,22 @@
     return a;
   }
   function __shdr(d) {
-    return '';
+    var i, x;
+    var s = '';
+    for (i = 0; i < d.length; i++) {
+      x = d[i];
+      s += _s20(x.name);
+      s += _n2s4(x.start);
+      s += _n2s4(x.end);
+      s += _n2s4(x.startlp);
+      s += _n2s4(x.endlp);
+      s += _n2s4(x.rate);
+      s += String.fromCharCode(x.key);
+      s += String.fromCharCode(x.corr);
+      s += _n2s2(x.link);
+      s += _n2s2(x.type);
+    }
+    return 'shdr' + _n2s4(s.length) + s;
   }
 
   function _n2v(a) { return a ? a[0] + ('.0' + a[1]).substr(0, 3) : ''; }
