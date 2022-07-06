@@ -129,6 +129,7 @@
     for (i = 0; i < _info_tags.length; i++) if (this.data[_info_tags[i]]) this.Header[_info_tags[i]] = this.data[_info_tags[i]];
     this.Samples = [];
     for (i = 0; i < this.data.shdr.length - 1; i++) this.Samples.push(new Sample(this.data.shdr[i], this));
+    for (i = 0; i < this.data.shdr.length - 1; i++) if (this.data.shdr[i].type & 14) this.Samples[i].link = this.Samples[this.data.shdr[i].link];
     this.IGens = [];
     for (i = 0; i < this.data.igen.length - 1; i++) this.IGens.push(new IGen(this.data.igen[i], this));
     this.IMods = [];
@@ -231,7 +232,7 @@
     }
   }
   function _dumpSDTA(d) {
-    var s = d.smpl ? '' : '';
+    var s = d.smpl ? 'smpl' + _n2s4(d.smpl.length) + d.smpl : '';
     return 'LIST' + _n2s4(s.length + 4) + 'sdta' + s;
   }
 
@@ -626,7 +627,6 @@
     this.key = a.key;
     this.corr = a.corr;
     this.type = a.type;
-    if (this.type & 14) this.link =  sf.Samples[a.link];
     this.sample = sf.data.smpl.substring(this.start * 2, this.end * 2); // 16-bit samples
     this.end -= this.start;
     this.startlp -= this.start;
@@ -646,6 +646,17 @@
     return wav.dump();
   };
   SF2.Sample = Sample;
+  function _refrSample(x, d) {
+    if (x._r == _r) return x._n;
+    var off = d.smpl.length / 2;
+    d.smpl += x.sample;
+    var z = new SHDR([x.name, x.start + off, x.end + off, x.startlp + off, x.endlp + off, x.rate, x.key, x.corr, 0, x.type]);
+    x._n = d.shdr.length;
+    x._r = _r;
+    d.shdr.push(z);
+    if (x.link) z.link = _refrSample(x.link, d);
+    return x._n;
+  }
 
   function genTitle(x) {
     return {
@@ -695,6 +706,7 @@
   }
   SF2.IGen = IGen;
   function _refrIGen(x, d) {
+    d.igen.push(new IGEN(x.oper, x.sample ? _refrSample(x.sample, d) : x.val));
   }
 
   function PGen(a, sf) {
@@ -706,6 +718,7 @@
   }
   SF2.PGen = PGen;
   function _refrPGen(x, d) {
+    d.pgen.push(new IGEN(x.oper, x.instr ? _refrInstr(x.instr, d) : x.val));
   }
 
   function initMod(g, a) {
@@ -739,6 +752,7 @@
   }
   SF2.IMod = IMod;
   function _refrIMod(x, d) {
+    d.imod.push(new IMOD(x.src, x.dest, x.oper, x.val, x.mod));
   }
 
   function PMod(a) {
@@ -746,6 +760,7 @@
   }
   SF2.PMod = PMod;
   function _refrPMod(x, d) {
+    d.pmod.push(new PMOD(x.src, x.dest, x.oper, x.val, x.mod));
   }
 
   function IZone(a, b, sf) {
@@ -761,6 +776,10 @@
   }
   SF2.IZone = IZone;
   function _refrIZone(x, d) {
+    var i;
+    d.ibag.push(new IBAG(d.igen.length, d.imod.length));
+    for (i = 0; i < x.mod.length; i++) _refrIMod(x.mod[i], d);
+    for (i = 0; i < x.gen.length; i++) _refrIGen(x.gen[i], d);
   }
 
   function PZone(a, b, sf) {
@@ -776,14 +795,10 @@
   }
   SF2.PZone = PZone;
   function _refrPZone(x, d) {
-    if (x._r == _r) return x._n;
-    x._n = d.pbag.length;
     var i;
     d.pbag.push(new PBAG(d.pgen.length, d.pmod.length));
     for (i = 0; i < x.mod.length; i++) _refrPMod(x.mod[i], d);
     for (i = 0; i < x.gen.length; i++) _refrPGen(x.gen[i], d);
-    x._r = _r;
-    return x._n;
   }
 
   function Instrument(a, b, sf) {
@@ -794,7 +809,13 @@
     }
   }
   SF2.Instrument = Instrument;
-  function _refrInstrument(x, d) {
+  function _refrInstr(x, d) {
+    if (x._r == _r) return x._n;
+    x._n = d.inst.length;
+    d.inst.push(new INST(x.name, d.ibag.length));
+    for (var i = 0; i < x.idx.length; i++) _refrIZone(x.idx[i], d);
+    x._r = _r;
+    return x._n;
   }
 
   function Preset(a, b, sf) {
@@ -808,12 +829,8 @@
   }
   SF2.Preset = Preset;
   function _refrPreset(x, d) {
-    if (x._r == _r) return x._n;
-    x._n = d.phdr.length;
     d.phdr.push(new PHDR([x.name, x.prog, x.bank, d.pbag.length, 0, 0, 0]));
     for (var i = 0; i < x.idx.length; i++) _refrPZone(x.idx[i], d);
-    x._r = _r;
-    return x._n;
   }
 
   function WAV() {
