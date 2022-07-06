@@ -25,6 +25,7 @@
     return String.fromCharCode(n & 0xff) + String.fromCharCode((n >> 8) & 0xff) + String.fromCharCode((n >> 16) & 0xff) + String.fromCharCode((n >> 24) & 0xff);
   }
 
+  var _r = 0;
   var _info = {
     ifil: 'File version', isng: 'Target', INAM: 'Bank Name', irom: 'ROM Name', iver: 'ROM Version',
     ICRD: 'Date', IENG: 'Designers', IPRD: 'Product', ICOP: 'Copyright', ICMT: 'Comments', ISFT: 'Software'
@@ -147,9 +148,20 @@
 
   SF2.prototype.refresh = function() {
     var i;
+    _r++;
     for (i = 0; i < _info_tags.length; i++) if (this.Header[_info_tags[i]]) this.data[_info_tags[i]] = this.Header[_info_tags[i]];
     this.data.smpl = '';
     for (i = 0; i < _pdta_tags.length; i++) this.data[_pdta_tags[i]] = [];
+    for (i = 0; i < this.length; i++) _refrPreset(this[i], this.data);
+    this.data.phdr.push(new PHDR(['EOP', 0, 0, this.data.pbag.length, 0, 0, 0]));
+    this.data.pbag.push(new PBAG(this.data.pgen.length, this.data.pmod.length));
+    this.data.pgen.push(new PGEN(0, 0));
+    this.data.pmod.push(new PMOD(0, 0, 0, 0, 0));
+    this.data.inst.push(new INST('EOI', this.data.ibag.length));
+    this.data.ibag.push(new IBAG(this.data.igen.length, this.data.imod.length));
+    this.data.igen.push(new IGEN(0, 0));
+    this.data.imod.push(new IMOD(0, 0, 0, 0, 0));
+    this.data.shdr.push(new SHDR(['EOS', 0, 0, 0, 0, 0, 0, 0, 0, 0]));
   };
 
   SF2.prototype.dump = function() {
@@ -682,6 +694,8 @@
     this.text = genText(this.oper, this.val);
   }
   SF2.IGen = IGen;
+  function _refrIGen(x, d) {
+  }
 
   function PGen(a, sf) {
     this.oper = a.oper;
@@ -691,6 +705,8 @@
     this.text = genText(this.oper, this.val);
   }
   SF2.PGen = PGen;
+  function _refrPGen(x, d) {
+  }
 
   function initMod(g, a) {
     g.src = a.src;
@@ -700,7 +716,7 @@
     g.mod = a.mod;
     g.cc = !!(g.src & 0x80);
     if (g.cc) {
-      g.name = 'xC ' + ('0' + (g.src & 0x7f).toString(16).toUpperCase()).substr(-2) + ' xx';
+      g.name = 'xC ' + ('0' + (g.src & 0x7f).toString(16).toUpperCase()).substring(-2) + ' xx';
     }
     else {
         g.name = {
@@ -722,11 +738,15 @@
     initMod(this, a);
   }
   SF2.IMod = IMod;
+  function _refrIMod(x, d) {
+  }
 
   function PMod(a) {
     initMod(this, a);
   }
   SF2.PMod = PMod;
+  function _refrPMod(x, d) {
+  }
 
   function IZone(a, b, sf) {
     var i;
@@ -740,6 +760,8 @@
     }
   }
   SF2.IZone = IZone;
+  function _refrIZone(x, d) {
+  }
 
   function PZone(a, b, sf) {
     var i;
@@ -753,6 +775,16 @@
     }
   }
   SF2.PZone = PZone;
+  function _refrPZone(x, d) {
+    if (x._r == _r) return x._n;
+    x._n = d.pbag.length;
+    var i;
+    d.pbag.push(new PBAG(d.pgen.length, d.pmod.length));
+    for (i = 0; i < x.mod.length; i++) _refrPMod(x.mod[i], d);
+    for (i = 0; i < x.gen.length; i++) _refrPGen(x.gen[i], d);
+    x._r = _r;
+    return x._n;
+  }
 
   function Instrument(a, b, sf) {
     this.name = a.name;
@@ -762,6 +794,8 @@
     }
   }
   SF2.Instrument = Instrument;
+  function _refrInstrument(x, d) {
+  }
 
   function Preset(a, b, sf) {
     this.name = a.name;
@@ -773,6 +807,14 @@
     }
   }
   SF2.Preset = Preset;
+  function _refrPreset(x, d) {
+    if (x._r == _r) return x._n;
+    x._n = d.phdr.length;
+    d.phdr.push(new PHDR([x.name, x.prog, x.bank, d.pbag.length, 0, 0, 0]));
+    for (var i = 0; i < x.idx.length; i++) _refrPZone(x.idx[i], d);
+    x._r = _r;
+    return x._n;
+  }
 
   function WAV() {
     var self = this;
