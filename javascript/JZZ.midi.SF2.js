@@ -166,6 +166,7 @@
   };
 
   SF2.prototype.dump = function() {
+    this.refresh();
     var s = _dumpINFO(this.data) + _dumpSDTA(this.data) + _dumpPDTA(this.data);
     s = 'RIFF' + _n2s4(s.length + 4) + 'sfbk' + s;
     return s;
@@ -583,6 +584,7 @@
   function _n2v(a) { return a ? a[0] + ('.0' + a[1]).substr(0, 3) : ''; }
 
   SF2.prototype.toString = function() {
+    this.refresh();
     var i, j, x;
     var a = ['SOUNDFONT ' + _n2v(this.data.ifil)];
     for (i = 1; i < _info_tags.length; i++) if (this.data[_info_tags[i]]) a.push('  ' + (_info[_info_tags[i]] + ':         ').substr(0, 14) + this.data[_info_tags[i]]);
@@ -600,6 +602,7 @@
     return sps || 48000;
   };
   SF2.prototype.toWav = function() {
+    this.refresh();
     if (this.data.smpl.substr(0, 4) == 'OggS') return '';
     var sps = this.freq();
     var wav = new WAV();
