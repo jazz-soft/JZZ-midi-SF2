@@ -14,7 +14,7 @@
   /* istanbul ignore next */
   if (JZZ.MIDI.SF2) return;
 
-  var _ver = '0.0.0';
+  var _ver = '0.0.1';
 
   function _error(s) { throw new Error(s); }
   function _s22n(s) { return s.charCodeAt(0) + 0x100 * s.charCodeAt(1); }
@@ -147,26 +147,26 @@
     for (i = 0; i < this.data.phdr.length - 1; i++) this.push(new Preset(this.data.phdr[i], this.data.phdr[i + 1], this));
   };
 
-  SF2.prototype.refresh = function() {
+  function _refresh(self) {
     var i;
     _r++;
-    for (i = 0; i < _info_tags.length; i++) if (this.Header[_info_tags[i]]) this.data[_info_tags[i]] = this.Header[_info_tags[i]];
-    this.data.smpl = '';
-    for (i = 0; i < _pdta_tags.length; i++) this.data[_pdta_tags[i]] = [];
-    for (i = 0; i < this.length; i++) _refrPreset(this[i], this.data);
-    this.data.phdr.push(new PHDR(['EOP', 0, 0, this.data.pbag.length, 0, 0, 0]));
-    this.data.pbag.push(new PBAG(this.data.pgen.length, this.data.pmod.length));
-    this.data.pgen.push(new PGEN(0, 0));
-    this.data.pmod.push(new PMOD(0, 0, 0, 0, 0));
-    this.data.inst.push(new INST('EOI', this.data.ibag.length));
-    this.data.ibag.push(new IBAG(this.data.igen.length, this.data.imod.length));
-    this.data.igen.push(new IGEN(0, 0));
-    this.data.imod.push(new IMOD(0, 0, 0, 0, 0));
-    this.data.shdr.push(new SHDR(['EOS', 0, 0, 0, 0, 0, 0, 0, 0, 0]));
-  };
+    for (i = 0; i < _info_tags.length; i++) if (self.Header[_info_tags[i]]) self.data[_info_tags[i]] = self.Header[_info_tags[i]];
+    self.data.smpl = '';
+    for (i = 0; i < _pdta_tags.length; i++) self.data[_pdta_tags[i]] = [];
+    for (i = 0; i < self.length; i++) _refrPreset(self[i], self.data);
+    self.data.phdr.push(new PHDR(['EOP', 0, 0, self.data.pbag.length, 0, 0, 0]));
+    self.data.pbag.push(new PBAG(self.data.pgen.length, self.data.pmod.length));
+    self.data.pgen.push(new PGEN(0, 0));
+    self.data.pmod.push(new PMOD(0, 0, 0, 0, 0));
+    self.data.inst.push(new INST('EOI', self.data.ibag.length));
+    self.data.ibag.push(new IBAG(self.data.igen.length, self.data.imod.length));
+    self.data.igen.push(new IGEN(0, 0));
+    self.data.imod.push(new IMOD(0, 0, 0, 0, 0));
+    self.data.shdr.push(new SHDR(['EOS', 0, 0, 0, 0, 0, 0, 0, 0, 0]));
+  }
 
   SF2.prototype.dump = function() {
-    this.refresh();
+    _refresh(this);
     var s = _dumpINFO(this.data) + _dumpSDTA(this.data) + _dumpPDTA(this.data);
     s = 'RIFF' + _n2s4(s.length + 4) + 'sfbk' + s;
     return s;
@@ -584,7 +584,7 @@
   function _n2v(a) { return a ? a[0] + ('.0' + a[1]).substr(0, 3) : ''; }
 
   SF2.prototype.toString = function() {
-    this.refresh();
+    _refresh(this);
     var i, j, x;
     var a = ['SOUNDFONT ' + _n2v(this.data.ifil)];
     for (i = 1; i < _info_tags.length; i++) if (this.data[_info_tags[i]]) a.push('  ' + (_info[_info_tags[i]] + ':         ').substr(0, 14) + this.data[_info_tags[i]]);
@@ -602,7 +602,7 @@
     return sps || 48000;
   };
   SF2.prototype.toWav = function() {
-    this.refresh();
+    _refresh(this);
     if (this.data.smpl.substr(0, 4) == 'OggS') return '';
     var sps = this.freq();
     var wav = new WAV();
