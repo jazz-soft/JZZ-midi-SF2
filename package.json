@@ -1,6 +1,6 @@
 {
   "name": "jzz-midi-sf2",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "coming soon...",
   "main": "javascript/JZZ.midi.SF2.js",
   "scripts": {
@@ -10,7 +10,8 @@
   },
   "keywords": [
     "midi",
-    "soundfont"
+    "soundfont",
+    "sf2"
   ],
   "author": "jazz-soft (https://jazz-soft.net/)",
   "dependencies": {
