@@ -19,6 +19,7 @@
   function _error(s) { throw new Error(s); }
   function _s22n(s) { return s.charCodeAt(0) + 0x100 * s.charCodeAt(1); }
   function _s42n(s) { return s.charCodeAt(0) + 0x100 * s.charCodeAt(1) + 0x10000 * s.charCodeAt(2) + 0x1000000 * s.charCodeAt(3); }
+  function _s82n(s) { return s.charCodeAt(0) + 0x100 * s.charCodeAt(1) + 0x10000 * s.charCodeAt(2) + 0x1000000 * s.charCodeAt(3) + 0x100000000 * s.charCodeAt(4) + 0x10000000000 * s.charCodeAt(5) + 0x1000000000000 * s.charCodeAt(6) + 0x100000000000000 * s.charCodeAt(7); }
   function _n2s2(n) { return String.fromCharCode(n & 0xff) + String.fromCharCode(n >> 8); }
   function _s20(s) { return (s + '\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0').substring(0, 20); }
   function _n2s4(n) {
@@ -229,7 +230,11 @@
       x = a[i][1];
       if (d[t]) _error('Duplicate chunk: ' + t);
       if (t != 'smpl') _error('Unexpected chunk: ' + t);
-      d[t] = x;
+      if (x.substr(0, 4) == 'OggS') {
+        d['ogg'] = x;
+        x = OGG(x).smpl();
+      }
+      d['smpl'] = x;
     }
   }
   function _dumpSDTA(d) {
@@ -916,7 +921,79 @@
     s = 'RIFF' + _n2s4(s.length + 4) + 'WAVE' + s;
     return s;
   };
-  
   SF2.WAV = WAV;
+
+  function OGG() {
+    var self = this;
+    if (!(self instanceof OGG)) {
+      self = new OGG();
+    }
+    if (arguments.length == 1) {
+      if (arguments[0] instanceof OGG) {
+        return arguments[0].copy();
+      }
+      var data;
+      try {
+        if (arguments[0] instanceof ArrayBuffer) {
+          data = _u8a2s(new Uint8Array(arguments[0]));
+        }
+      }
+      catch (err) {/**/}
+      try {
+        if (arguments[0] instanceof Uint8Array || arguments[0] instanceof Int8Array) {
+          data = _u8a2s(new Uint8Array(arguments[0]));
+        }
+      }
+      catch (err) {/**/}
+      try {
+        /* istanbul ignore next */
+        if (arguments[0] instanceof Buffer) {
+          data = arguments[0].toString('binary');
+        }
+      }
+      catch (err) {/**/}
+      if (typeof arguments[0] == 'string') {
+        data = arguments[0];
+      }
+      self.load(data);
+      return self;
+    }
+  }
+  OGG.prototype = [];
+  OGG.prototype.constructor = OGG;
+  var _oggs = 'OggS';
+  OGG.prototype.load = function(s) {
+    var p, t, m, n;
+    for (p = 0; p != -1; p = s.indexOf(_oggs, p)) {
+      console.log(p);
+      p += 4;
+      //s.charCodeAt(p); // version = 0
+      p += 1;
+      //s.charCodeAt(p); // flag: f&1 - cont/fresh; f&2 - first; f&4 - last
+      p += 1;
+      t = _s82n(s.substr(p, 8)); // time
+      p += 8;
+      m = _s42n(s.substr(p, 4)); // stream id
+      p += 4;
+      //_s42n(s.substr(p, 4)); // seq num
+      p += 4;
+      // checksum
+      p += 4;
+      n = s.charCodeAt(p);
+      p += 1;
+      var a = [];
+      for (var i = 0; i < n; i++) {
+        a.push(s.charCodeAt(p));
+        p += 1;
+      }
+      console.log(m, t, n);
+      console.log(a.join(' '));
+      }
+  };
+  OGG.prototype.smpl = function() {
+    return '';
+  }
+  SF2.OGG = OGG;
+
   JZZ.MIDI.SF2 = SF2;
 });
