@@ -961,15 +961,22 @@
   }
   OGG.prototype = [];
   OGG.prototype.constructor = OGG;
-  var _oggs = 'OggS';
+  function _vorbis1(s) {
+    if (s.length != 30 || s.substr(0, 7) != '\1vorbis') return;
+    return 1;
+  }
+  function _vorbis2(s) {
+    if (s.substr(0, 7) != '\3vorbis') return;
+    return 1;
+  }
   OGG.prototype.load = function(s) {
-    var p, t, m, n;
-    for (p = 0; p != -1; p = s.indexOf(_oggs, p)) {
-      console.log(p);
+    var i, p, f, t, m, n, a;
+    var b = '';
+    for (p = 0; p != -1; p = s.indexOf('OggS', p)) {
       p += 4;
       //s.charCodeAt(p); // version = 0
       p += 1;
-      //s.charCodeAt(p); // flag: f&1 - cont/fresh; f&2 - first; f&4 - last
+      f = s.charCodeAt(p); // flag: f&1 - cont/fresh; f&2 - first; f&4 - last
       p += 1;
       t = _s82n(s.substr(p, 8)); // time
       p += 8;
@@ -981,14 +988,20 @@
       p += 4;
       n = s.charCodeAt(p);
       p += 1;
-      var a = [];
-      for (var i = 0; i < n; i++) {
+      a = [];
+      for (i = 0; i < n; i++) {
         a.push(s.charCodeAt(p));
         p += 1;
       }
-      console.log(m, t, n);
-      console.log(a.join(' '));
+      for (i = 0; i < a.length; i++) {
+        b += s.substr(p, a[i]);
+        if (a[i] < 255) {
+          if (_vorbis1(b) || _vorbis2(b)) console.log(b);
+          b = '';
+        }
+        p += a[i];
       }
+    }
   };
   OGG.prototype.smpl = function() {
     return '';
