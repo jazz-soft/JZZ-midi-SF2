@@ -962,11 +962,11 @@
   OGG.prototype = [];
   OGG.prototype.constructor = OGG;
   function _vorbis1(s) {
-    if (s.length != 30 || s.substr(0, 7) != '\1vorbis') return;
+    if (s.length != 30 || s.substr(0, 7) != '\x01vorbis') return;
     return 1;
   }
   function _vorbis2(s) {
-    if (s.substr(0, 7) != '\3vorbis') return;
+    if (s.substr(0, 7) != '\x03vorbis') return;
     return 1;
   }
   OGG.prototype.load = function(s) {
