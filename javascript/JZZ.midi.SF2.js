@@ -963,7 +963,25 @@
   OGG.prototype.constructor = OGG;
   function _vorbis1(s) {
     if (s.length != 30 || s.substr(0, 7) != '\x01vorbis') return;
-    return 1;
+    var x = {};
+    var p = 7;
+    x.ver = _s42n(s.substr(p, 4)); // = 0
+    p += 4;
+    x.chan = s.charCodeAt(p);
+    p += 1;
+    x.rate = _s42n(s.substr(p, 4));
+    p += 4;
+    x.max = _s42n(s.substr(p, 4));
+    p += 4;
+    x.nom = _s42n(s.substr(p, 4));
+    p += 4;
+    x.min = _s42n(s.substr(p, 4));
+    p += 4;
+    x.blk0 = (s.charCodeAt(p) & 15);
+    x.blk1 = (s.charCodeAt(p) >> 4);
+    p += 1;
+    x.flag = s.charCodeAt(p);
+    return x;
   }
   function _vorbis2(s) {
     if (s.substr(0, 7) != '\x03vorbis') return;
