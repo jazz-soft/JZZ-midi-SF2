@@ -1001,6 +1001,14 @@
     }
     return x;
   }
+  function _vorbis3(s) {
+    if (s.substr(0, 7) != '\x05vorbis') return;
+    var p = 7;
+    var n = s.charCodeAt(p) + 1;
+    p += 1;
+//console.log('n:', n);
+    return 1;
+  }
   OGG.prototype.load = function(s) {
     var i, p, f, t, m, n, a;
     var b = '';
@@ -1028,7 +1036,7 @@
       for (i = 0; i < a.length; i++) {
         b += s.substr(p, a[i]);
         if (a[i] < 255) {
-          if (_vorbis1(b) || _vorbis2(b)) console.log(b);
+          if (_vorbis1(b) || _vorbis2(b) || _vorbis3(b)) ;//console.log(b.substr(0, 7));
           b = '';
         }
         p += a[i];
