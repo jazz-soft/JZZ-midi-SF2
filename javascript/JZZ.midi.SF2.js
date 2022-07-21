@@ -985,7 +985,21 @@
   }
   function _vorbis2(s) {
     if (s.substr(0, 7) != '\x03vorbis') return;
-    return 1;
+    var x = {};
+    var p = 7;
+    var n = _s42n(s.substr(p, 4));
+    p += 4;
+    x.vendor = JZZ.lib.fromUTF8(s.substr(p, n));
+    p += n;
+    var k = _s42n(s.substr(p, 4));
+    p += 4;
+    for (var i = 0; i < k; i++) {
+      n = _s42n(s.substr(p, 4));
+      p += 4;
+      x[i] = JZZ.lib.fromUTF8(s.substr(p, n));
+      p += n;
+    }
+    return x;
   }
   OGG.prototype.load = function(s) {
     var i, p, f, t, m, n, a;
