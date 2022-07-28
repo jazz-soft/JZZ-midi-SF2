@@ -1014,33 +1014,64 @@
     }
     return (c & b) ? 1 : 0;
   }
+  function _bits(s, it, n) {
+    var i;
+    var k = 1;
+    var x = 0;
+    for (i = 0; i < n; i++) {
+      var z = _bit(s, it);
+      if (z) x += k;
+      k <<= 1;
+    }
+    return x;
+  }
   function _vorbis3(s) {
     if (s.substr(0, 7) != '\x05vorbis') return;
-    var i, d, e, f, it;
+    var i, j, d, e, f, ll;
     var p = 7;
     var n = s.charCodeAt(p) + 1;
     p += 1;
-//console.log('n:', n);
+    var it = { p: p, b: 0 };
     for (i = 0; i < n; i++) {
-      if (s.substr(p, 3) != 'BCV') return;
-      p += 3;
-      d = _s22n(s.substr(p, 2));
-      p += 2;
-      e = _s32n(s.substr(p, 3))
-      p += 3;
-      it = { p: p, b: 0 };
+      f = _bits(s, it, 24);
+      if (f != 0x564342) return; // 'BCV'
+      //) return;
+      //p += 3;
+      d = _bits(s, it, 16);
+      //p += 2;
+      e = _bits(s, it, 24);
+      //p += 3;
+      ll = [];
       f = _bit(s, it);
       if (f) {
         console.log('Vorbis: Ordered codebook entries are not supported yet');
+        return;
       }
       else {
-        console.log('unordered');
+        f = _bit(s, it);
+        if (f) {
+          for (j = 0; j < e; j++) {
+            f = _bit(s, it);
+            ll.push(f ? _bits(s, it, 5) + 1 : 0);
+          }
+        }
+        else {
+          for (j = 0; j < e; j++) {
+            ll.push(_bits(s, it, 5) + 1);
+          }
+        }
       }
-      //f = s.charCodeAt(p);
+      f = _bits(s, it, 4);
+      if (f) {
+        console.log('Vorbis: Codebook lookup not supported yet');
+        //return;
+      }
 
-      console.log(d, e, f);
-      break;
+      console.log(i, "/", n, ':', d, e, f);
+      p = it.p;
+//      break;
     }
+    console.log(n);
     return 1;
   }
   OGG.prototype.load = function(s) {
