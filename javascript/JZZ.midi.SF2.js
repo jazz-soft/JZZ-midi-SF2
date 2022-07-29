@@ -1029,11 +1029,11 @@
     var x = _bits(s, it, 21);
     var e = _bits(s, it, 10) - 788;
     if (_bit(s, it)) x = - x;
-console.log(x, e);
     return x * Math.pow(2, e);
   }
   function _lkp1(e, d) {
     // x ^ d <= e
+    console.log(e, d);
   }
   function _vorbis3(s) {
     if (s.substr(0, 7) != '\x05vorbis') return;
@@ -1072,12 +1072,25 @@ console.log(x, e);
       }
       cb.lookup = _bits(s, it, 4);
       if (cb.lookup) {
-        console.log('Vorbis: Codebook lookup not supported yet');
         cb.min = _float32(s, it);
         cb.delta = _float32(s, it);
         cb.bits = _bits(s, it, 4) + 1;
         cb.seqp = _bit(s, it);
-        //return;
+        if (cb.lookup == 1) {
+          e = _lkp1(e, d);
+        }
+        else if (cb.lookup == 2) {
+          e = e * d;
+        }
+        else {
+          console.log('Vorbis: Codebook lookup type ' + cb.lookup + ' is not supported yet');
+          return;
+        }
+        cb.mm  = [];
+        for (j = 0; j < e; j++) {
+          cb.mm.push(_bits(s, it, cb.bits));
+        }
+      //return;
       }
 
       console.log(i, "/", n, ':', cb);
