@@ -1025,9 +1025,21 @@
     }
     return x;
   }
+  function _float32(s, it) {
+    var x = _bits(s, it, 21);
+    var e = _bits(s, it, 10) - 788;
+    if (_bit(s, it)) x = - x;
+console.log(x, e);
+    return x * Math.pow(2, e);
+  }
+  function _lkp1(e, d) {
+    // x ^ d <= e
+  }
   function _vorbis3(s) {
     if (s.substr(0, 7) != '\x05vorbis') return;
-    var i, j, d, e, f, ll;
+    var x = [];
+    var cb;
+    var i, j, d, e, f;
     var p = 7;
     var n = s.charCodeAt(p) + 1;
     p += 1;
@@ -1035,44 +1047,44 @@
     for (i = 0; i < n; i++) {
       f = _bits(s, it, 24);
       if (f != 0x564342) return; // 'BCV'
-      //) return;
-      //p += 3;
+      cb = {};
       d = _bits(s, it, 16);
-      //p += 2;
       e = _bits(s, it, 24);
-      //p += 3;
-      ll = [];
-      f = _bit(s, it);
-      if (f) {
+      cb.ll = [];
+      cb.ordered = _bit(s, it);
+      if (cb.ordered) {
         console.log('Vorbis: Ordered codebook entries are not supported yet');
         return;
       }
       else {
-        f = _bit(s, it);
-        if (f) {
+        cb.sparse = _bit(s, it);
+        if (cb.sparse) {
           for (j = 0; j < e; j++) {
             f = _bit(s, it);
-            ll.push(f ? _bits(s, it, 5) + 1 : 0);
+            cb.ll.push(f ? _bits(s, it, 5) + 1 : 0);
           }
         }
         else {
           for (j = 0; j < e; j++) {
-            ll.push(_bits(s, it, 5) + 1);
+            cb.ll.push(_bits(s, it, 5) + 1);
           }
         }
       }
-      f = _bits(s, it, 4);
-      if (f) {
+      cb.lookup = _bits(s, it, 4);
+      if (cb.lookup) {
         console.log('Vorbis: Codebook lookup not supported yet');
+        cb.min = _float32(s, it);
+        cb.delta = _float32(s, it);
+        cb.bits = _bits(s, it, 4) + 1;
+        cb.seqp = _bit(s, it);
         //return;
       }
 
-      console.log(i, "/", n, ':', d, e, f);
-      p = it.p;
-//      break;
+      console.log(i, "/", n, ':', cb);
+      //p = it.p;
+      x.push(cb);
     }
-    console.log(n);
-    return 1;
+    return x;
   }
   OGG.prototype.load = function(s) {
     var i, p, f, t, m, n, a;
