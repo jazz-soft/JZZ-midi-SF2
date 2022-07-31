@@ -18,7 +18,6 @@
 
   function _error(s) { throw new Error(s); }
   function _s22n(s) { return s.charCodeAt(0) + 0x100 * s.charCodeAt(1); }
-  function _s32n(s) { return s.charCodeAt(0) + 0x100 * s.charCodeAt(1) + 0x10000 * s.charCodeAt(2); }
   function _s42n(s) { return s.charCodeAt(0) + 0x100 * s.charCodeAt(1) + 0x10000 * s.charCodeAt(2) + 0x1000000 * s.charCodeAt(3); }
   function _s82n(s) { return s.charCodeAt(0) + 0x100 * s.charCodeAt(1) + 0x10000 * s.charCodeAt(2) + 0x1000000 * s.charCodeAt(3) + 0x100000000 * s.charCodeAt(4) + 0x10000000000 * s.charCodeAt(5) + 0x1000000000000 * s.charCodeAt(6) + 0x100000000000000 * s.charCodeAt(7); }
   function _n2s2(n) { return String.fromCharCode(n & 0xff) + String.fromCharCode(n >> 8); }
@@ -1033,7 +1032,7 @@
   }
   function _lkp1(e, d) {
     // x ^ d <= e
-    console.log(e, d);
+    for (var x = 1; ; x++) if (Math.pow(x, d) > e) return x - 1;
   }
   function _vorbis3(s) {
     if (s.substr(0, 7) != '\x05vorbis') return;
