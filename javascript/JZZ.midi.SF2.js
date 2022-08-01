@@ -1089,11 +1089,8 @@
         for (j = 0; j < e; j++) {
           cb.mm.push(_bits(s, it, cb.bits));
         }
-      //return;
       }
-
-      console.log(i, "/", n, ':', cb);
-      //p = it.p;
+      //console.log(i, "/", n, ':', cb);
       x.push(cb);
     }
     return x;
