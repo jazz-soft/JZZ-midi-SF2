@@ -1093,6 +1093,16 @@
       //console.log(i, "/", n, ':', cb);
       x.push(cb);
     }
+    n = _bits(s, it, 6) + 1;
+    for (i = 0; i < n; i++) {
+      _bits(s, it, 16); // == 0
+    }
+    n = _bits(s, it, 6) + 1;
+    for (i = 0; i < n; i++) {
+      _bits(s, it, 16); // == 0
+    }
+    //console.log(n);
+    //console.log(it, s.length);
     return x;
   }
   OGG.prototype.load = function(s) {
