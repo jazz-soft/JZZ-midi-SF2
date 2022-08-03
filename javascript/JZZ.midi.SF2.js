@@ -1036,9 +1036,9 @@
   }
   function _vorbis3(s) {
     if (s.substr(0, 7) != '\x05vorbis') return;
-    var x = [];
-    var cb;
-    var i, j, d, e, f;
+    var x = { cb: [], fl: [], re: []};
+    var xx;
+    var i, j, k, d, e, f;
     var p = 7;
     var n = s.charCodeAt(p) + 1;
     p += 1;
@@ -1046,52 +1046,52 @@
     for (i = 0; i < n; i++) {
       f = _bits(s, it, 24);
       if (f != 0x564342) return; // 'BCV'
-      cb = {};
+      xx = {};
       d = _bits(s, it, 16);
       e = _bits(s, it, 24);
-      cb.ll = [];
-      cb.ordered = _bit(s, it);
-      if (cb.ordered) {
+      xx.ll = [];
+      xx.ordered = _bit(s, it);
+      if (xx.ordered) {
         console.log('Vorbis: Ordered codebook entries are not supported yet');
         return;
       }
       else {
-        cb.sparse = _bit(s, it);
-        if (cb.sparse) {
+        xx.sparse = _bit(s, it);
+        if (xx.sparse) {
           for (j = 0; j < e; j++) {
             f = _bit(s, it);
-            cb.ll.push(f ? _bits(s, it, 5) + 1 : 0);
+            xx.ll.push(f ? _bits(s, it, 5) + 1 : 0);
           }
         }
         else {
           for (j = 0; j < e; j++) {
-            cb.ll.push(_bits(s, it, 5) + 1);
+            xx.ll.push(_bits(s, it, 5) + 1);
           }
         }
       }
-      cb.lookup = _bits(s, it, 4);
-      if (cb.lookup) {
-        cb.min = _float32(s, it);
-        cb.delta = _float32(s, it);
-        cb.bits = _bits(s, it, 4) + 1;
-        cb.seqp = _bit(s, it);
-        if (cb.lookup == 1) {
+      xx.lookup = _bits(s, it, 4);
+      if (xx.lookup) {
+        xx.min = _float32(s, it);
+        xx.delta = _float32(s, it);
+        xx.bits = _bits(s, it, 4) + 1;
+        xx.seqp = _bit(s, it);
+        if (xx.lookup == 1) {
           e = _lkp1(e, d);
         }
-        else if (cb.lookup == 2) {
+        else if (xx.lookup == 2) {
           e = e * d;
         }
         else {
-          console.log('Vorbis: Codebook lookup type ' + cb.lookup + ' is not supported yet');
+          console.log('Vorbis: Codebook lookup type ' + xx.lookup + ' is not supported yet');
           return;
         }
-        cb.mm  = [];
+        xx.mm  = [];
         for (j = 0; j < e; j++) {
-          cb.mm.push(_bits(s, it, cb.bits));
+          xx.mm.push(_bits(s, it, xx.bits));
         }
       }
-      //console.log(i, "/", n, ':', cb);
-      x.push(cb);
+      //console.log(i, "/", n, ':', xx);
+      x.cb.push(xx);
     }
     n = _bits(s, it, 6) + 1;
     for (i = 0; i < n; i++) {
@@ -1099,10 +1099,47 @@
     }
     n = _bits(s, it, 6) + 1;
     for (i = 0; i < n; i++) {
-      _bits(s, it, 16); // == 0
+      xx = {};
+      xx.type = _bits(s, it, 16);
+      if (xx.type == 0) {
+        console.log(xx);
+        console.log('Floor type 0 - coming soon...');
+      }
+      else if (xx.type == 1) {
+        d = _bits(s, it, 5);
+        xx.cl = [];
+        for (j = 0; j < d; j++) xx.cl.push(_bits(s, it, 4));
+        e = 0;
+        for (j = 0; j < d; j++) if (e < xx.cl[j]) e = xx.cl[j];
+        xx.dd = [];
+        xx.ss = [];
+        xx.mb = [];
+        xx.sb = [];
+        for (j = 0; j <= e; j++) {
+          xx.dd.push(_bits(s, it, 3) + 1);
+          f = _bits(s, it, 2);
+          xx.ss.push(f);
+          xx.mb.push(f ? _bits(s, it, 8) : 0);
+          f = Math.pow(2, f);
+          xx.sb.push([]);
+          for (k = 0; k < f; k++) xx.sb[j].push(_bits(s, it, 8) - 1);
+        }
+        xx.fm = _bits(s, it, 2) + 1;
+        xx.rb = _bits(s, it, 4);
+        xx.x0 = 0;
+        xx.x1 = Math.pow(2, xx.rb);
+        console.log(d, e, xx);
+        //console.log('Floor type 1 - coming soon...');
+      }
+      else {
+        console.log('Vorbis: Floor type ' + xx.type + ' is not supported');
+        return;
+      }
+      x.fl.push(xx);
     }
     //console.log(n);
     //console.log(it, s.length);
+    console.log(x);
     return x;
   }
   OGG.prototype.load = function(s) {
