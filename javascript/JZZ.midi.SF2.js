@@ -1090,7 +1090,6 @@
           xx.mm.push(_bits(s, it, xx.bits));
         }
       }
-      //console.log(i, "/", n, ':', xx);
       x.cb.push(xx);
     }
     n = _bits(s, it, 6) + 1;
@@ -1126,10 +1125,11 @@
         }
         xx.fm = _bits(s, it, 2) + 1;
         xx.rb = _bits(s, it, 4);
-        xx.x0 = 0;
-        xx.x1 = Math.pow(2, xx.rb);
-        console.log(d, e, xx);
-        //console.log('Floor type 1 - coming soon...');
+        xx.xl = [0, Math.pow(2, xx.rb)];
+        for (j = 0; j < d; j++) {
+          e = xx.dd[xx.cl[j]];
+          for (k = 0; k < e; k++) xx.xl.push(_bits(s, it, xx.rb));
+        }
       }
       else {
         console.log('Vorbis: Floor type ' + xx.type + ' is not supported');
@@ -1137,9 +1137,7 @@
       }
       x.fl.push(xx);
     }
-    //console.log(n);
-    //console.log(it, s.length);
-    console.log(x);
+    console.log(it, s.length);
     return x;
   }
   OGG.prototype.load = function(s) {
