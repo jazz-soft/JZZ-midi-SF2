@@ -1036,7 +1036,7 @@
   }
   function _vorbis3(s) {
     if (s.substr(0, 7) != '\x05vorbis') return;
-    var x = { cb: [], fl: [], re: []};
+    var x = { cb: [], fl: [], re: [], mp: [] };
     var xx;
     var i, j, k, d, e, f;
     var p = 7;
@@ -1092,6 +1092,7 @@
       }
       x.cb.push(xx);
     }
+    // floors
     n = _bits(s, it, 6) + 1;
     for (i = 0; i < n; i++) {
       _bits(s, it, 16); // == 0
@@ -1101,8 +1102,8 @@
       xx = {};
       xx.type = _bits(s, it, 16);
       if (xx.type == 0) {
-        console.log(xx);
         console.log('Floor type 0 - coming soon...');
+        return;
       }
       else if (xx.type == 1) {
         d = _bits(s, it, 5);
@@ -1137,7 +1138,41 @@
       }
       x.fl.push(xx);
     }
-    console.log(it, s.length);
+    // residues
+    n = _bits(s, it, 6) + 1;
+    for (i = 0; i < n; i++) {
+      xx = {};
+      xx.type = _bits(s, it, 16);
+      xx.begin = _bits(s, it, 24);
+      xx.end = _bits(s, it, 24);
+      xx.sz = _bits(s, it, 24) + 1;
+      d = _bits(s, it, 6) + 1;
+      xx.cb = _bits(s, it, 8);
+      xx.rc = [];
+      xx.rb = [];
+      for (j = 0; j < d; j++) {
+        xx.rc.push(_bits(s, it, 3) + (_bit(s, it) ? _bits(s, it, 5) * 8 : 0));
+      }
+      for (j = 0; j < d; j++) {
+        xx.rb.push([]);
+        for (k = 0; k < 8; k++) {
+          if (xx.rc[j] & (1 << k)) xx.rb[j][k] = _bits(s, it, 8);
+        }
+      }
+      if (xx.type < 0 || xx.type > 2) {
+        console.log('Vorbis: Residue type ' + xx.type + ' is not supported');
+        return;
+      }
+      x.re.push(xx);
+    }
+    // mappings
+    n = _bits(s, it, 6) + 1;
+    //console.log(n);
+    for (i = 0; i < n; i++) {
+      xx = {};
+      x.mp.push(xx);
+    }
+    //console.log(it, s.length);
     return x;
   }
   OGG.prototype.load = function(s) {
