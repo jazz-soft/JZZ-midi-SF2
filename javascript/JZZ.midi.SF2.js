@@ -980,7 +980,7 @@
     x.blk0 = (s.charCodeAt(p) & 15);
     x.blk1 = (s.charCodeAt(p) >> 4);
     p += 1;
-    x.flag = s.charCodeAt(p);
+    s.charCodeAt(p); // != 0
     return x;
   }
   function _vorbis2(s) {
@@ -1170,14 +1170,29 @@
     //console.log(n);
     for (i = 0; i < n; i++) {
       xx = {};
+      xx.type = _bits(s, it, 16);
+      if (xx.type) {
+        console.log('Vorbis: Mapping type ' + xx.type + ' is not supported');
+        //return;
+      }
+      xx.sm = _bit(s, it) ? _bits(s, it, 16) + 1 : 1;
+      //xx.cs = _bit(s, it) ? _bits(s, it, 8) + 1 : 0;
+      d = _bit(s, it) ? _bits(s, it, 8) + 1 : 0;
+      for (j = 0; j < d; j++) {
+
+      }
+
+      console.log(xx);
       x.mp.push(xx);
     }
     //console.log(it, s.length);
     return x;
   }
   OGG.prototype.load = function(s) {
-    var i, p, f, t, m, n, a;
+    var i, p, f, t, m, n, a, x;
     var b = '';
+    var current = {};
+    var all = [];
     for (p = 0; p != -1; p = s.indexOf('OggS', p)) {
       p += 4;
       //s.charCodeAt(p); // version = 0
@@ -1202,10 +1217,32 @@
       for (i = 0; i < a.length; i++) {
         b += s.substr(p, a[i]);
         if (a[i] < 255) {
-          if (_vorbis1(b) || _vorbis2(b) || _vorbis3(b)) ;//console.log(b.substr(0, 7));
+          if (current[m]) {
+            if (!current[m].comm) {
+              x = _vorbis2(b);
+              if (!x) throw new Error('Bad OGG file');
+              current[m].comm = x;
+            }
+            else if (!current[m].cb) {
+              x = _vorbis3(b);
+              if (!x) throw new Error('Bad OGG file');
+              current[m].cb = x.cb;
+            }
+            else {
+              //console.log(i, a[i], f);
+            }
+          }
+          else {
+            x = _vorbis1(b);
+            current[m] = x;
+          }
           b = '';
         }
         p += a[i];
+      }
+      if ((f&4) && current[m]) {
+        all.push(current[m]);
+        delete current[m];
       }
     }
   };
