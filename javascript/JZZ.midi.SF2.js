@@ -1034,6 +1034,14 @@
     // x ^ d <= e
     for (var x = 1; ; x++) if (Math.pow(x, d) > e) return x - 1;
   }
+  function _ilog(x) {
+    var i = 0;
+    var n = 1;
+    while (n < x) {
+      i++; n <<= 1;
+    }
+    return i;
+  }
   function _vorbis3(s) {
     if (s.substr(0, 7) != '\x05vorbis') return;
     var x = { cb: [], fl: [], re: [], mp: [] };
@@ -1053,7 +1061,8 @@
       xx.ordered = _bit(s, it);
       if (xx.ordered) {
         console.log('Vorbis: Ordered codebook entries are not supported yet');
-        return;
+        //return;
+        k = _bits(s, it, 5) + 1; // curret_length
       }
       else {
         xx.sparse = _bit(s, it);
