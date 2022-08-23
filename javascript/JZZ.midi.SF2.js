@@ -1037,7 +1037,7 @@
   function _ilog(x) {
     var i = 0;
     var n = 1;
-    while (n < x) {
+    while (n <= x) {
       i++; n <<= 1;
     }
     return i;
@@ -1060,9 +1060,17 @@
       xx.ll = [];
       xx.ordered = _bit(s, it);
       if (xx.ordered) {
-        console.log('Vorbis: Ordered codebook entries are not supported yet');
-        //return;
         k = _bits(s, it, 5) + 1; // curret_length
+        while (true) {
+          f = _bits(s, it, _ilog(e - xx.ll.length));
+          for (j = 0; j < f; j++) xx.ll.push(k);
+          if (e == xx.ll.length) break;
+          if (e < xx.ll.length) {
+            console.log('Vorbis: corrupted file');
+            return;
+          }
+          k++;
+        }
       }
       else {
         xx.sparse = _bit(s, it);
