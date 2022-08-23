@@ -1042,9 +1042,9 @@
     }
     return i;
   }
-  function _vorbis3(s) {
+  function _vorbis3(s, w) {
     if (s.substr(0, 7) != '\x05vorbis') return;
-    var x = { cb: [], fl: [], re: [], mp: [] };
+    var x = { cb: [], fl: [], re: [], mp: [], md: [] };
     var xx;
     var i, j, k, d, e, f;
     var p = 7;
@@ -1184,25 +1184,38 @@
     }
     // mappings
     n = _bits(s, it, 6) + 1;
-    //console.log(n);
     for (i = 0; i < n; i++) {
       xx = {};
       xx.type = _bits(s, it, 16);
       if (xx.type) {
         console.log('Vorbis: Mapping type ' + xx.type + ' is not supported');
-        //return;
+        return;
       }
       xx.sm = _bit(s, it) ? _bits(s, it, 16) + 1 : 1;
-      //xx.cs = _bit(s, it) ? _bits(s, it, 8) + 1 : 0;
       d = _bit(s, it) ? _bits(s, it, 8) + 1 : 0;
+      f = w.chan ? _ilog(w.chan - 1) : 0;
+      xx.mm = [];
+      xx.ma = [];
+      xx.fl = [];
+      xx.re = [];
       for (j = 0; j < d; j++) {
-
+        xx.mm.push(_bits(s, it, f));
+        xx.ma.push(_bits(s, it, f));
       }
-
-      console.log(xx);
+      d = _bits(s, it, 2); // reserved = 0
+      if (xx.sm > 1) {
+        console.log('Vorbis: Multiple submaps are not yet supported');
+        return;
+      }
+      for (j = 0; j < xx.sm; j++) {
+        _bits(s, it, 8); // ignore
+        xx.fl.push(_bits(s, it, 8));
+        xx.re.push(_bits(s, it, 8));
+      }
+      //console.log(xx);
       x.mp.push(xx);
     }
-    //console.log(it, s.length);
+    console.log(it, s.length);
     return x;
   }
   OGG.prototype.load = function(s) {
@@ -1241,9 +1254,13 @@
               current[m].comm = x;
             }
             else if (!current[m].cb) {
-              x = _vorbis3(b);
+              x = _vorbis3(b, current[m]);
               if (!x) throw new Error('Bad OGG file');
               current[m].cb = x.cb;
+              current[m].fl = x.fl;
+              current[m].re = x.re;
+              current[m].mp = x.mp;
+              current[m].md = x.md;
             }
             else {
               //console.log(i, a[i], f);
