@@ -1212,10 +1212,19 @@
         xx.fl.push(_bits(s, it, 8));
         xx.re.push(_bits(s, it, 8));
       }
-      //console.log(xx);
       x.mp.push(xx);
     }
-    console.log(it, s.length);
+    // modes
+    n = _bits(s, it, 6) + 1;
+    for (i = 0; i < n; i++) {
+      xx = {};
+      xx.bl = _bit(s, it);
+      xx.wt = _bits(s, it, 16);
+      xx.tt = _bits(s, it, 16);
+      xx.mp = _bits(s, it, 8);
+      f = _bit(s, it);
+      x.md.push(xx);
+    }
     return x;
   }
   OGG.prototype.load = function(s) {
