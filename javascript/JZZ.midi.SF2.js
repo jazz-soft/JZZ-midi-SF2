@@ -1227,6 +1227,13 @@
     }
     return x;
   }
+  function _vorbis(s, w) {
+    var f;
+    var it = { p: 0, b: 0 };
+    f = _bit(s, it);
+    if (f) return;
+    //console.log('audio');
+  }
   OGG.prototype.load = function(s) {
     var i, p, f, t, m, n, a, x;
     var b = '';
@@ -1273,6 +1280,8 @@
             }
             else {
               //console.log(i, a[i], f);
+              x = _vorbis(b, current[m]);
+              if (!x) continue;
             }
           }
           else {
