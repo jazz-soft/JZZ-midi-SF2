@@ -977,8 +977,8 @@
     p += 4;
     x.min = _s42n(s.substr(p, 4));
     p += 4;
-    x.blk0 = (s.charCodeAt(p) & 15);
-    x.blk1 = (s.charCodeAt(p) >> 4);
+    x.blk0 = 1 << (s.charCodeAt(p) & 15);
+    x.blk1 = 1 << (s.charCodeAt(p) >> 4);
     p += 1;
     s.charCodeAt(p); // != 0
     return x;
@@ -1228,10 +1228,22 @@
     return x;
   }
   function _vorbis(s, w) {
-    var f;
+    var i, m, n, f;
     var it = { p: 0, b: 0 };
     f = _bit(s, it);
     if (f) return;
+    m = _ilog(w.md.length - 1);
+    m = m ? _bits(s, it, m) : 0; // mode_number
+    if (w.md[m].bl) {
+      n = w.blk1;
+      console.log('Vorbis: long windows are not yet supported');
+      return;
+    }
+    else {
+      n = w.blk0;
+//console.log(n);
+    }
+    //[w.md[m].mp
     //console.log('audio');
   }
   OGG.prototype.load = function(s) {
