@@ -1117,7 +1117,7 @@
     n = _bits(s, it, 6) + 1;
     for (i = 0; i < n; i++) {
       xx = {};
-      xx.type = _bits(s, it, 16);
+      xx.type = _bits(s, it, 16); // vorbis_floor_types
       if (xx.type == 0) {
         console.log('Floor type 0 - coming soon...');
         return;
@@ -1191,16 +1191,16 @@
         console.log('Vorbis: Mapping type ' + xx.type + ' is not supported');
         return;
       }
-      xx.sm = _bit(s, it) ? _bits(s, it, 16) + 1 : 1;
-      d = _bit(s, it) ? _bits(s, it, 8) + 1 : 0;
+      xx.sm = _bit(s, it) ? _bits(s, it, 4) + 1 : 1; // vorbis_mapping_submaps
+      d = _bit(s, it) ? _bits(s, it, 8) + 1 : 0; // vorbis_mapping_coupling_steps
       f = w.chan ? _ilog(w.chan - 1) : 0;
       xx.mm = [];
       xx.ma = [];
       xx.fl = [];
       xx.re = [];
       for (j = 0; j < d; j++) {
-        xx.mm.push(_bits(s, it, f));
-        xx.ma.push(_bits(s, it, f));
+        xx.mm.push(_bits(s, it, f)); // vorbis_mapping_magnitude
+        xx.ma.push(_bits(s, it, f)); // vorbis_mapping_angle
       }
       d = _bits(s, it, 2); // reserved = 0
       if (xx.sm > 1) {
@@ -1209,8 +1209,8 @@
       }
       for (j = 0; j < xx.sm; j++) {
         _bits(s, it, 8); // ignore
-        xx.fl.push(_bits(s, it, 8));
-        xx.re.push(_bits(s, it, 8));
+        xx.fl.push(_bits(s, it, 8)); // vorbis_mapping_submap_floor
+        xx.re.push(_bits(s, it, 8)); // vorbis_mapping_submap_residue
       }
       x.mp.push(xx);
     }
@@ -1234,6 +1234,7 @@
     if (f) return;
     m = _ilog(w.md.length - 1);
     m = m ? _bits(s, it, m) : 0; // mode_number
+//console.log(w.md[m]);
     if (w.md[m].bl) {
       n = w.blk1;
       console.log('Vorbis: long windows are not yet supported');
@@ -1243,8 +1244,12 @@
       n = w.blk0;
 //console.log(n);
     }
-    //[w.md[m].mp
+    //console.log(w.mp[[w.md[m].mp]]);
+    //console.log(w);
     //console.log('audio');
+    for (i = 0; i < w.chan; i++) {
+
+    }
   }
   OGG.prototype.load = function(s) {
     var i, p, f, t, m, n, a, x;
