@@ -678,21 +678,30 @@
       15: 'Chorus Send',
       16: 'Reverb Send',
       17: 'Pan',
+      21: 'Mod Delay',
       22: 'Mod Frequency',
+      23: 'Vibrato Delay',
       24: 'Vibrato Frequency',
-      34: 'Attack (v)',
-      35: 'Hold (v)',
-      36: 'Decay (v)',
-      37: 'Sustain (v)',
-      38: 'Release (v)',
+      26: 'Mod Attack',
+      27: 'Mod Hold',
+      28: 'Mod Decay',
+      29: 'Mod Sustain',
+      34: 'Attack',
+      35: 'Hold',
+      36: 'Decay',
+      37: 'Sustain',
+      38: 'Release',
       41: 'Instrument',
       43: 'Key Range',
       44: 'Velocity Range',
       46: 'Key',
       47: 'Velocity',
       48: 'Attenuation',
+      51: 'Tune Coarse',
+      52: 'Tune Fine',
       53: 'Sample',
-      54: 'Sample Flags'
+      54: 'Sample Flags',
+      58: 'Root Key'
     }[x] || x;
   }
 
@@ -700,6 +709,8 @@
     switch (op) {
       case 15: case 16: case 17:
         return ((v & 0x8000) ? v - 0x10000 : v) / 10 + '%'; 
+      case 21: case 23: case 25: case 26: case 27: case 28: case 30: case 33: case 34: case 35: case 36: case 38:
+        return v ? parseFloat((Math.pow(2, ((v & 0x8000) ? v - 0x10000 : v) / 1200)).toFixed(3)) + ' s' : 0; 
       case 43:
         return (v & 0xff) + ' - ' + (v >> 8);
     }
