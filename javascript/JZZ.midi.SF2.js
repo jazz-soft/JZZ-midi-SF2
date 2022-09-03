@@ -16,6 +16,7 @@
 
   var _ver = '0.0.2';
 
+  function _nop() {}
   function _error(s) { throw new Error(s); }
   function _s22n(s) { return s.charCodeAt(0) + 0x100 * s.charCodeAt(1); }
   function _s42n(s) { return s.charCodeAt(0) + 0x100 * s.charCodeAt(1) + 0x10000 * s.charCodeAt(2) + 0x1000000 * s.charCodeAt(3); }
@@ -970,6 +971,7 @@
       return self;
     }
   }
+  OGG.onChunk = _nop;
   OGG.prototype = [];
   OGG.prototype.constructor = OGG;
   function _vorbis1(s) {
@@ -1295,11 +1297,13 @@
             if (!current[m].comm) {
               x = _vorbis2(b);
               if (!x) throw new Error('Bad OGG file');
+              OGG.onChunk(b);
               current[m].comm = x;
             }
             else if (!current[m].cb) {
               x = _vorbis3(b, current[m]);
               if (!x) throw new Error('Bad OGG file');
+              OGG.onChunk(b);
               current[m].cb = x.cb;
               current[m].fl = x.fl;
               current[m].re = x.re;
@@ -1310,11 +1314,13 @@
               //console.log(i, a[i], f);
               x = _vorbis(b, current[m]);
               if (!x) continue;
+              OGG.onChunk(b);
             }
           }
           else {
             x = _vorbis1(b);
             current[m] = x;
+            OGG.onChunk(b);
           }
           b = '';
         }
