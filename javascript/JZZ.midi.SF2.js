@@ -1263,6 +1263,7 @@
     for (i = 0; i < w.chan; i++) {
 
     }
+    return true;
   }
   OGG.prototype.load = function(s) {
     var i, p, f, t, m, n, a, x;
