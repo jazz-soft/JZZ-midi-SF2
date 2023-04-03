@@ -1,6 +1,7 @@
 (function(global, factory) {
   /* istanbul ignore next */
   if (typeof exports === 'object' && typeof module !== 'undefined') {
+    factory.SF2 = factory;
     module.exports = factory;
   }
   else if (typeof define === 'function' && define.amd) {
