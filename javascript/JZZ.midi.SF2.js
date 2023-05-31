@@ -15,7 +15,7 @@
   /* istanbul ignore next */
   if (JZZ.MIDI.SF2) return;
 
-  var _ver = '0.0.2';
+  var _ver = '0.0.3';
 
   function _nop() {}
   function _error(s) { throw new Error(s); }
