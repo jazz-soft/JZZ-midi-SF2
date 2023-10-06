@@ -15,7 +15,7 @@
   /* istanbul ignore next */
   if (JZZ.MIDI.SF2) return;
 
-  var _ver = '0.0.3';
+  var _ver = '0.0.4';
 
   function _nop() {}
   function _error(s) { throw new Error(s); }
@@ -233,10 +233,10 @@
       if (d[t]) _error('Duplicate chunk: ' + t);
       if (t != 'smpl') _error('Unexpected chunk: ' + t);
       if (x.substr(0, 4) == 'OggS') {
-        d['ogg'] = x;
+        d.ogg = x;
         x = OGG(x).smpl();
       }
-      d['smpl'] = x;
+      d.smpl = x;
     }
   }
   function _dumpSDTA(d) {
@@ -1336,7 +1336,7 @@
   };
   OGG.prototype.smpl = function() {
     return '';
-  }
+  };
   SF2.OGG = OGG;
 
   JZZ.MIDI.SF2 = SF2;
