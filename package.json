@@ -15,16 +15,16 @@
   ],
   "author": "jazz-soft (https://jazz-soft.net/)",
   "dependencies": {
-    "jzz": "^1.7.8"
+    "jzz": "^1.9.3"
   },
   "devDependencies": {
-    "eslint": "^8.56.0",
+    "eslint": "^9.26.0",
     "grunt": "^1.6.1",
     "grunt-contrib-jshint": "^3.2.0",
     "grunt-contrib-uglify": "^5.2.2",
-    "jzz-synth-fluid": "^1.0.6",
-    "mocha": "^10.2.0",
-    "nyc": "^15.1.0"
+    "jzz-synth-fluid": "^1.0.8",
+    "mocha": "^11.2.2",
+    "nyc": "^17.1.0"
   },
   "repository": {
     "type": "git",
